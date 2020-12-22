@@ -2,10 +2,7 @@
 URL for challenge: https://adventofcode.com/2020/day/2
 """
 
-def main():
-    return
-
-def part1(parsed_data):
+def part1():
     f = open("advent-02-input.txt")
     num_valid_pwds = 0
     for policy_pwd in f.readlines():
@@ -23,7 +20,7 @@ def part1(parsed_data):
 
     return num_valid_pwds
 
-def part2(parsed_data):
+def part2():
     f = open("advent-02-input.txt")
     num_valid_pwds = 0
     for policy_pwd in f.readlines():
@@ -34,6 +31,7 @@ def part2(parsed_data):
         first_case = pwd[lower_idx-1] == letter
         second_case = pwd[upper_idx-1] == letter
 
+        # Use XOR gate
         if first_case ^ second_case:
             num_valid_pwds += 1
 
@@ -41,11 +39,10 @@ def part2(parsed_data):
 
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
-    parsed_data = main()
     if chall == 1:
-        print(part1(parsed_data))
+        print(part1())
     elif chall == 2:
-        print(part2(parsed_data))
+        print(part2())
     else:
         print("You need to enter either 1 or 2")
         exit(1)
