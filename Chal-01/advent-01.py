@@ -5,6 +5,12 @@ URL for challenge: https://adventofcode.com/2020/day/1
 from functools import reduce
 
 def part1():
+    """
+    Calculate the inverse of the given amounts
+    (2020 - amount). By creating sets for them
+    and taking the intersection, the only amounts
+    that will be left are x and (2020 - x).
+    """
     f = open("advent-01-input.txt")
     amounts = set()
     inverse_amounts = set()
