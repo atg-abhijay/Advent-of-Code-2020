@@ -14,10 +14,9 @@ def process_input():
 
 def part1(target_amount, amounts):
     """
-    Calculate the inverse of the given amounts
-    (2020 - amount). By creating sets for them
-    and taking the intersection, the only amounts
-    that will be left are x and (2020 - x).
+    By taking the intersection of the set of given amounts
+    with the set of their inverses, the only amounts
+    that will be left will be x and (target - x).
     """
     inverse_amounts = [target_amount - x for x in amounts]
     pair_entries = (set(amounts)).intersection(set(inverse_amounts))
@@ -29,12 +28,19 @@ def part1(target_amount, amounts):
     elif num_entries == 2:
         return reduce(lambda x, y: x*y, pair_entries)
 
+    # This case is only possible when Part 1 is used by Part 2
     return None
 
 def part2():
     amounts = process_input()
     inverse_amounts = [2020 - x for x in amounts]
-
+    """
+    Suppose x + inv = 2020 and x is assumed to be part of
+    the solution, check if it is possible to find two
+    numbers y, z from amounts-[x] s.t. y + z = inv
+    (i.e. check existence of solution for part 1 with
+    inputs inv and amounts-[x]).
+    """
     for idx, inv in enumerate(inverse_amounts):
         sub_solution = part1(inv, amounts[:idx] + amounts[idx+1:])
         if sub_solution is not None:
