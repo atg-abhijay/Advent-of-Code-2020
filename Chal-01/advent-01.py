@@ -20,7 +20,10 @@ def part1():
         inverse_amounts.add(2020-amount)
 
     pair_entries = amounts.intersection(inverse_amounts)
-    print(reduce(lambda x, y: x*y, pair_entries))
+    if len(pair_entries) == 1:
+        return pair_entries.pop() ** 2
+
+    return reduce(lambda x, y: x*y, pair_entries)
 
 def part2():
     return
@@ -28,9 +31,9 @@ def part2():
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
     if chall == 1:
-        part1()
+        print(part1())
     elif chall == 2:
-        part2()
+        print(part2())
     else:
         print("You need to enter either 1 or 2")
         exit(1)
