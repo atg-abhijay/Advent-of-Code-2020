@@ -24,7 +24,20 @@ def part1(parsed_data):
     return num_valid_pwds
 
 def part2(parsed_data):
-    return
+    f = open("advent-02-input.txt")
+    num_valid_pwds = 0
+    for policy_pwd in f.readlines():
+        indices, letter, pwd = policy_pwd.split(sep=' ')
+        lower_idx, upper_idx = [int(idx) for idx in indices.split(sep='-')]
+        letter = letter[0]
+
+        first_case = pwd[lower_idx-1] == letter
+        second_case = pwd[upper_idx-1] == letter
+
+        if first_case ^ second_case:
+            num_valid_pwds += 1
+
+    return num_valid_pwds
 
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
