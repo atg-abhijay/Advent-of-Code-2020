@@ -2,7 +2,7 @@
 URL for challenge: https://adventofcode.com/2020/day/3
 """
 
-def part1(right_mvmt, down_mvmt):
+def process_input():
     f = open("advent-03-input.txt")
     grid = []
     for row in f.readlines():
@@ -10,6 +10,11 @@ def part1(right_mvmt, down_mvmt):
 
     num_rows = len(grid)
     num_cols = len(grid[0])
+
+    return [grid, num_rows, num_cols]
+
+def part1(input_details, right_mvmt, down_mvmt):
+    grid, num_rows, num_cols = input_details
     current_row, current_col, num_trees = 0, 0, 0
 
     while current_row < num_rows:
@@ -23,18 +28,19 @@ def part1(right_mvmt, down_mvmt):
 
 def part2():
     result = 1
-    result *= part1(1, 1)
-    result *= part1(3, 1)
-    result *= part1(5, 1)
-    result *= part1(7, 1)
-    result *= part1(1, 2)
+    input_details = process_input()
+    result *= part1(input_details, 1, 1)
+    result *= part1(input_details, 3, 1)
+    result *= part1(input_details, 5, 1)
+    result *= part1(input_details, 7, 1)
+    result *= part1(input_details, 1, 2)
 
     return result
 
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
     if chall == 1:
-        print(part1(3, 1))
+        print(part1(process_input(), 3, 1))
     elif chall == 2:
         print(part2())
     else:
