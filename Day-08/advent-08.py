@@ -3,14 +3,19 @@ URL for challenge: https://adventofcode.com/2020/day/8
 """
 
 
-def part1():
+def process_input():
     f = open("advent-08-input.txt")
     instructions = []
     for line in f.readlines():
         line = line.strip().split(sep=' ')
         instr, amount = line[0], int(line[1])
-        instructions.append((instr, amount))
+        instructions.append([instr, amount])
 
+    return instructions
+
+
+def part1():
+    instructions = process_input()
     times_executed = [0 for x in range(len(instructions))]
     accumulator, idx, should_stop = 0, 0, False
     while not should_stop:
