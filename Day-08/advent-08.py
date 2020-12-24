@@ -4,7 +4,32 @@ URL for challenge: https://adventofcode.com/2020/day/8
 
 
 def part1():
-    return
+    f = open("advent-08-input.txt")
+    instructions = []
+    for line in f.readlines():
+        line = line.strip().split(sep=' ')
+        instr, amount = line[0], int(line[1])
+        instructions.append((instr, amount))
+
+    times_executed = [0 for x in range(len(instructions))]
+    accumulator, idx, should_stop = 0, 0, False
+    while not should_stop:
+        instr, amount = instructions[idx]
+        if times_executed[idx] > 0:
+            break
+
+        times_executed[idx] += 1
+        if instr == 'acc':
+            accumulator += amount
+            idx += 1
+
+        elif instr == 'jmp':
+            idx += amount
+
+        else:
+            idx += 1
+
+    return accumulator
 
 
 def part2():
