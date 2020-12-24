@@ -7,6 +7,10 @@ from collections import deque
 
 
 class Bag(object):
+    """
+    Use a deque to expedite popping
+    of elements from the left.
+    """
     def __init__(self, bag_type):
         self.type = bag_type
         self.children = deque()
@@ -15,6 +19,9 @@ class Bag(object):
 
 
 def process_input():
+    """
+    Dictionary structure explained in the PR.
+    """
     f = open("advent-07-input.txt")
     bags_dict = {}
     for bag_info in f.readlines():
@@ -49,6 +56,11 @@ def process_input():
 
 
 def part1():
+    """
+    Start with the immediate parents
+    of the shiny gold bag and work upwards
+    towards the ancestors.
+    """
     bags_dict = process_input()
     shiny_gold_bag = bags_dict["shiny gold"]
     parents_deque = shiny_gold_bag.parents
@@ -69,6 +81,12 @@ def part2():
 
 
 def find_num_children(bag, bags_dict):
+    """
+    To avoid incorrect values, check if #children
+    are already calculated and return directly.
+    A child will contribute itself (hence the +1)
+    as well as its own children.
+    """
     if bag.num_children:
         return bag.num_children
 
