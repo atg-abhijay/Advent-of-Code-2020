@@ -4,16 +4,18 @@ URL for challenge: https://adventofcode.com/2020/day/7
 
 
 from collections import deque
+import json
 
 class Bag(object):
     def __init__(self, bag_type):
         self.type = bag_type
         self.children = deque()
         self.parents = deque()
+        self.num_children = 0
 
 
-def part1():
-    f = open("advent-07-input.txt")
+def process_input():
+    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-07/advent-07-input.txt")
     bags_dict = {}
     for bag_info in f.readlines():
         p_bag_type, children_bags = bag_info.split(sep=' contain ')
@@ -43,6 +45,11 @@ def part1():
 
             parent_obj.children.append(child_bag)
 
+    return bags_dict
+
+
+def part1():
+    bags_dict = process_input()
     shiny_gold_bag = bags_dict["shiny gold"]
     parents_deque = shiny_gold_bag.parents
     unique_parents = set()
@@ -56,12 +63,32 @@ def part1():
 
 
 def part2():
-    return
+    bags_dict = process_input()
+    shiny_gold_bag = bags_dict["shiny gold"]
+    return find_num_children(shiny_gold_bag, bags_dict)
 
+
+def find_num_children(bag, bags_dict):
+    if bag.num_children:
+        return bag.num_children
+
+    for child in bag.children:
+        bag.num_children += child["quantity"] * (1 + find_num_children(bags_dict[child["type"]], bags_dict))
+
+    return bag.num_children
+
+
+# def create_processed_input():
+#     bags_dict = process_input()
+#     bags = []
+#     for key in bags_dict.keys():
+#         bags.append(json.dumps(bags_dict[key].__dict__))
+
+#     print(bags)
 
 def run():
     # chall = int(input("Please enter either 1 or 2 for the challenges: "))
-    chall = 1
+    chall = 2
     if chall == 1:
         print(part1())
     elif chall == 2:
@@ -81,5 +108,7 @@ def test():
     # print(r.split(sep=' contain ')[1].split(', '))
     print(' '.join(temp[0].split(sep=' ')[1:3]))
 
+
 # test()
+# create_processed_input()
 run()
