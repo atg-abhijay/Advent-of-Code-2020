@@ -4,6 +4,14 @@ URL for challenge: https://adventofcode.com/2020/day/5
 
 
 def generate_rows_cols():
+    """
+    Upper/lower half can be thought of as
+    switching on/off a bit.
+
+    Generate binary numbers for the seat rows
+    and columns based on whether a letter
+    corresponds to upper half or lower half.
+    """
     f = open("advent-05-input.txt")
     seat_rows, seat_cols = [], []
     for line in f.readlines():
@@ -32,14 +40,20 @@ def part1():
 
 def part2():
     seat_rows, seat_cols = generate_rows_cols()
-    num_rows = 128
-    num_cols = 8
+    num_rows, num_cols = 128, 8
+    # Generate a grid with all
+    # the possible seat IDs.
     all_seat_ids = [[row * num_cols + col for col in range(num_cols)]
                     for row in range(num_rows)]
 
+    # Empty out all the seats that
+    # are a part of the puzzle input.
     for row, col in zip(seat_rows, seat_cols):
         all_seat_ids[row][col] = 0
 
+    # The missing seat will be non-empty. Since
+    # its neighbours are also a part of the puzzle
+    # input, the neighbours will now be empty.
     missing_seat, is_seat_found = 0, False
     for row in range(num_rows):
         for col in range(num_cols):
