@@ -4,7 +4,7 @@ URL for challenge: https://adventofcode.com/2020/day/7
 
 
 from collections import deque
-import json
+
 
 class Bag(object):
     def __init__(self, bag_type):
@@ -15,7 +15,7 @@ class Bag(object):
 
 
 def process_input():
-    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-07/advent-07-input.txt")
+    f = open("advent-07-input.txt")
     bags_dict = {}
     for bag_info in f.readlines():
         p_bag_type, children_bags = bag_info.split(sep=' contain ')
@@ -73,22 +73,14 @@ def find_num_children(bag, bags_dict):
         return bag.num_children
 
     for child in bag.children:
-        bag.num_children += child["quantity"] * (1 + find_num_children(bags_dict[child["type"]], bags_dict))
+        bag.num_children += child["quantity"] * \
+            (1 + find_num_children(bags_dict[child["type"]], bags_dict))
 
     return bag.num_children
 
 
-# def create_processed_input():
-#     bags_dict = process_input()
-#     bags = []
-#     for key in bags_dict.keys():
-#         bags.append(json.dumps(bags_dict[key].__dict__))
-
-#     print(bags)
-
 def run():
-    # chall = int(input("Please enter either 1 or 2 for the challenges: "))
-    chall = 2
+    chall = int(input("Please enter either 1 or 2 for the challenges: "))
     if chall == 1:
         print(part1())
     elif chall == 2:
@@ -98,17 +90,4 @@ def run():
         exit(1)
 
 
-def test():
-    s = "dim silver bags contain 2 shiny chartreuse bags, 4 dull magenta bags."
-    t = "plaid beige bags contain 3 drab magenta bags."
-    r = "mirrored gold bags contain no other bags."
-    # print(s.split(sep=' contain ')[0].split(sep=' bags')[0])
-    temp = s.split(sep=' contain ')[1].split(', ')
-    # print(t.split(sep=' contain ')[1].split(', '))
-    # print(r.split(sep=' contain ')[1].split(', '))
-    print(' '.join(temp[0].split(sep=' ')[1:3]))
-
-
-# test()
-# create_processed_input()
 run()
