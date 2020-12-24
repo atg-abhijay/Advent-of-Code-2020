@@ -3,15 +3,17 @@ URL for challenge: https://adventofcode.com/2020/day/7
 """
 
 
+from collections import deque
+
 class Bag(object):
     def __init__(self, bag_type):
         self.type = bag_type
-        self.children = []
-        self.parents = []
+        self.children = deque()
+        self.parents = deque()
 
 
 def part1():
-    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-07/advent-07-input.txt")
+    f = open("advent-07-input.txt")
     bags_dict = {}
     for bag_info in f.readlines():
         p_bag_type, children_bags = bag_info.split(sep=' contain ')
@@ -41,7 +43,16 @@ def part1():
 
             parent_obj.children.append(child_bag)
 
-    return bags_dict
+    shiny_gold_bag = bags_dict["shiny gold"]
+    parents_deque = shiny_gold_bag.parents
+    unique_parents = set()
+    while parents_deque:
+        p = parents_deque.popleft()
+        unique_parents.add(p)
+        for q in bags_dict[p].parents:
+            parents_deque.append(q)
+
+    return len(unique_parents)
 
 
 def part2():
