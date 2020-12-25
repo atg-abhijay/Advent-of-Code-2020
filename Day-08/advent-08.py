@@ -25,36 +25,51 @@ def part2():
     corrupt_instr_idxs = run_instructions(instructions, False)[1]
 
     for corrupt_idx in corrupt_instr_idxs:
-        corrupt_instr = instructions[corrupt_idx][0]
-        if corrupt_instr == 'nop':
+        instr = instructions[corrupt_idx][0]
+        if instr == 'nop':
             instructions[corrupt_idx][0] = 'jmp'
         else:
             instructions[corrupt_idx][0] = 'nop'
 
         result = run_instructions(instructions, True)
-        accumulator, should_stop = result[0], result[2]
+        accumulator, does_prog_terminate = result[0], result[2]
 
-        if should_stop:
-            instructions[corrupt_idx][0] = corrupt_instr
-        else:
+        if does_prog_terminate:
             break
+        else:
+            # If program does not terminate,
+            # put back the original instruction.
+            instructions[corrupt_idx][0] = instr
 
     return accumulator
 
 
-def run_instructions(instructions, check_termination):
+def run_instructions(instructions, check_prog_termination):
+    """
+    Return multiple entities so that Parts 1 and 2
+    can use the entities that they need specifically.
+    Iterate over the instructions and:
+    - build up the accumulator
+    - collect indices for instructions that may be corrupt
+    - report if program terminates or not upon replacing
+      a candidate corrupt instruction
+    """
     num_instr = len(instructions)
+    # Number of times an instruction is executed
     times_executed = [0 for x in range(num_instr)]
-    accumulator, idx, should_stop = 0, 0, False
+    # Indices for instructions that may be corrupt
     corrupt_instr_idxs = []
+    accumulator, idx, does_prog_terminate = 0, 0, False
 
-    while not should_stop:
-        if check_termination and idx >= num_instr:
+    while True:
+        if check_prog_termination and idx >= num_instr:
+            does_prog_terminate = True
             break
 
         instr, amount = instructions[idx]
+        # If an instruction has already been executed,
+        # the program will get stuck in a loop now.
         if times_executed[idx] > 0:
-            should_stop = True
             break
 
         times_executed[idx] += 1
@@ -70,7 +85,7 @@ def run_instructions(instructions, check_termination):
             corrupt_instr_idxs.append(idx)
             idx += 1
 
-    return accumulator, corrupt_instr_idxs, should_stop
+    return accumulator, corrupt_instr_idxs, does_prog_terminate
 
 
 def run():
