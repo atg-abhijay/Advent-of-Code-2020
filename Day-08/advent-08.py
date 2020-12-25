@@ -21,6 +21,11 @@ def part1():
 
 
 def part2():
+    """
+    Replace candidate corrupt instructions
+    (instructions with 'jmp' or 'nop')
+    one-by-one and check if the program terminates.
+    """
     instructions = process_input()
     corrupt_instr_idxs = run_instructions(instructions, False)[1]
 
