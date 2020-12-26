@@ -9,6 +9,9 @@ class Adapter(object):
     def __init__(self, joltage):
         self.joltage: int = joltage
         self.children: List[Adapter] = []
+        # number of paths from this
+        # adapter to the device
+        self.num_paths = 0
 
 
 def process_input():
@@ -56,49 +59,39 @@ def part1():
 def part2():
     sorted_joltages = process_input()
     num_joltages = len(sorted_joltages)
-    adapter_objs = {joltage: Adapter(joltage) for joltage in sorted_joltages}
+    adapters_dict = {joltage: Adapter(joltage) for joltage in sorted_joltages}
 
     for idx, joltage in enumerate(sorted_joltages):
-        adap = adapter_objs[joltage]
+        adapter = adapters_dict[joltage]
         idx += 1
         while True and idx < num_joltages:
             child_joltage = sorted_joltages[idx]
             if child_joltage - joltage <= 3:
-                adap.children.append(adapter_objs[child_joltage])
+                adapter.children.append(adapters_dict[child_joltage])
             else:
                 break
 
             idx += 1
 
-    return find_num_paths(adapter_objs[0], adapter_objs, {})
+    return find_num_paths(adapters_dict[0])
 
 
-def find_num_paths(adap, adapter_objs, num_paths_dict):
+def find_num_paths(adapter):
     """
     Perform a DFS and find the number of
     paths possible from an adapter.
-
-    :param adap: current adapter
-    :param adapter_objs: dict of joltage, Adapter
-    :param num_paths_dict: dict of joltage, num_paths (#paths
-        possible from an adapter with a specific joltage).
-        It will help to avoid repeated calculations.
     """
-    num_paths = 0
-    num_paths_dict[adap.joltage] = num_paths
-    if not adap.children:
-        num_paths_dict[adap.joltage] = 1
-        return 1
+    if not adapter.children:
+        adapter.num_paths = 1
+        return adapter.num_paths
 
-    for child_adap in adap.children:
-        if child_adap.joltage in num_paths_dict:
-            num_paths += num_paths_dict[child_adap.joltage]
+    for child_adapter in adapter.children:
+        if child_adapter.num_paths:
+            adapter.num_paths += child_adapter.num_paths
         else:
-            num_paths += find_num_paths(child_adap,
-                                        adapter_objs, num_paths_dict)
+            adapter.num_paths += find_num_paths(child_adapter)
 
-    num_paths_dict[adap.joltage] = num_paths
-    return num_paths
+    return adapter.num_paths
 
 
 def run():
