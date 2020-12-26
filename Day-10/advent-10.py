@@ -1,13 +1,14 @@
 """
-URL for challenge: https://adventofcode.com/2020/day/6
+URL for challenge: https://adventofcode.com/2020/day/10
 """
+
+from typing import List
 
 
 class Adapter(object):
     def __init__(self, joltage):
-        self.joltage = joltage
-        self.children = []
-        self.parents = []
+        self.joltage: int = joltage
+        self.children: List[Adapter] = []
 
 
 def process_input():
@@ -63,9 +64,7 @@ def part2():
         while True and idx < num_joltages:
             child_joltage = sorted_joltages[idx]
             if child_joltage - joltage <= 3:
-                child_adap = adapter_objs[child_joltage]
-                adap.children.append(child_joltage)
-                child_adap.parents.append(joltage)
+                adap.children.append(adapter_objs[child_joltage])
             else:
                 break
 
@@ -75,20 +74,32 @@ def part2():
 
 
 def find_num_paths(adap, adapter_objs, num_paths_dict):
+    """
+    Perform a DFS and find the number of
+    paths possible from an adapter.
+
+    :param adap: current adapter
+    :param adapter_objs: dict of joltage, Adapter
+    :param num_paths_dict: dict of joltage, num_paths (#paths
+        possible from an adapter with a specific joltage).
+        It will help to avoid repeated calculations.
+    """
     num_paths = 0
     num_paths_dict[adap.joltage] = num_paths
     if not adap.children:
+        num_paths_dict[adap.joltage] = 1
         return 1
 
-    for child_joltage in adap.children:
-        child_adap = adapter_objs[child_joltage]
+    for child_adap in adap.children:
         if child_adap.joltage in num_paths_dict:
             num_paths += num_paths_dict[child_adap.joltage]
         else:
-            num_paths += find_num_paths(child_adap, adapter_objs, num_paths_dict)
+            num_paths += find_num_paths(child_adap,
+                                        adapter_objs, num_paths_dict)
 
     num_paths_dict[adap.joltage] = num_paths
     return num_paths
+
 
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
