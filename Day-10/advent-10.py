@@ -10,6 +10,19 @@ class Adapter(object):
         self.parents = []
 
 
+def process_input():
+    f = open("advent-10-input.txt")
+    # Add charging outlet
+    joltages = [0]
+    for jolt in f.readlines():
+        joltages.append(int(jolt.strip()))
+
+    sorted_joltages = sorted(joltages)
+    # Add device's built-in adapter
+    sorted_joltages.append(sorted_joltages[-1] + 3)
+    return sorted_joltages
+
+
 def part1():
     """
     Since there is a way to use all adapters,
@@ -21,19 +34,12 @@ def part1():
     the sorting will help ensure that the next
     closest adapter is picked.
     """
-    f = open("advent-10-input.txt")
-    joltages = []
-    for jolt in f.readlines():
-        joltages.append(int(jolt.strip()))
-
-    sorted_joltages = sorted(joltages)
-    # Add device's built-in adapter
-    sorted_joltages.append(sorted_joltages[-1] + 3)
+    sorted_joltages = process_input()
     one_jolt_diffs, three_jolt_diffs = 0, 0
     # Charging outlet
-    prev_jolt = 0
+    prev_jolt = sorted_joltages[0]
 
-    for jolt in sorted_joltages:
+    for jolt in sorted_joltages[1:]:
         jolt_diff = jolt - prev_jolt
         if jolt_diff == 1:
             one_jolt_diffs += 1
@@ -47,17 +53,10 @@ def part1():
 
 
 def part2():
-    f = open("advent-10-input.txt")
-    joltages = []
-    for jolt in f.readlines():
-        joltages.append(int(jolt.strip()))
-
-    sorted_joltages = [0] + sorted(joltages)
-    # Add device's built-in adapter
-    sorted_joltages.append(sorted_joltages[-1] + 3)
+    sorted_joltages = process_input()
     num_joltages = len(sorted_joltages)
-
     adapter_objs = {joltage: Adapter(joltage) for joltage in sorted_joltages}
+
     for idx, joltage in enumerate(sorted_joltages):
         adap = adapter_objs[joltage]
         idx += 1
