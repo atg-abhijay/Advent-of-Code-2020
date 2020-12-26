@@ -3,7 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/11
 """
 
 
-def part1():
+def process_input():
     """
     Since the rules are applied to all seats
     simultaneously, two grids will be required
@@ -24,6 +24,12 @@ def part1():
 
     num_rows, num_cols = len(grid_before_rules), len(grid_before_rules[0])
     grid_after_rules = [['.' for x in range(num_cols)] for y in range(num_rows)]
+
+    return grid_before_rules, grid_after_rules, num_rows, num_cols
+
+
+def part1():
+    grid_before_rules, grid_after_rules, num_rows, num_cols = process_input()
 
     # Only stop once the application of
     # the rules produces no changes in state
