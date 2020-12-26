@@ -4,7 +4,16 @@ URL for challenge: https://adventofcode.com/2020/day/11
 
 
 def part1():
+    """
+    Since the rules are applied to all seats
+    simultaneously, two grids will be required
+    since the original grid cannot be edited
+    whilst the rules are being applied.
+    """
     f = open("advent-11-input.txt")
+    # Create a boundary of 'floor' tiles that
+    # surrounds the original input to avoid having
+    # to check for index out of bounds for corner cases.
     grid_before_rules = []
     for row in f.readlines():
         seats = ['.'] + list(row.strip()) + ['.']
@@ -16,7 +25,11 @@ def part1():
     num_rows, num_cols = len(grid_before_rules), len(grid_before_rules[0])
     grid_after_rules = [['.' for x in range(num_cols)] for y in range(num_rows)]
 
+    # Only stop once the application of
+    # the rules produces no changes in state
     while True:
+        # Since a boundary was added to the original grid,
+        # the indices are as such to process only the original grid
         for row_idx in range(1, num_rows - 1):
             for col_idx in range(1, num_cols - 1):
                 seat_state = grid_before_rules[row_idx][col_idx]
@@ -28,6 +41,9 @@ def part1():
                 elif seat_state == '#' and num_neighbours >= 4:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
+        # 1. Check if applying the rules changed the grid
+        # 2. Copy the 'after' grid to the 'before' grid in
+        #    preparation for the next iteration of rules
         is_grid_unchanged = True
         for row_idx in range(1, num_rows - 1):
             for col_idx in range(1, num_cols - 1):
