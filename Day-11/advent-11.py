@@ -3,6 +3,9 @@ URL for challenge: https://adventofcode.com/2020/day/11
 """
 
 
+num_rows, num_cols = 0, 0
+
+
 def process_input():
     """
     Since the rules are applied to all seats
@@ -22,15 +25,16 @@ def process_input():
     grid_before_rules = [['.' for x in range(
         len(seats))]] + grid_before_rules + [['.' for x in range(len(seats))]]
 
+    global num_rows, num_cols
     num_rows, num_cols = len(grid_before_rules), len(grid_before_rules[0])
     grid_after_rules = [
         ['.' for x in range(num_cols)] for y in range(num_rows)]
 
-    return grid_before_rules, grid_after_rules, num_rows, num_cols
+    return grid_before_rules, grid_after_rules
 
 
 def part1():
-    grid_before_rules, grid_after_rules, num_rows, num_cols = process_input()
+    grid_before_rules, grid_after_rules = process_input()
 
     # Only stop once the application of
     # the rules produces no changes in state
@@ -49,13 +53,12 @@ def part1():
                 elif seat_state == '#' and num_neighbours >= 4:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
-        is_grid_unchanged = check_grid_change_and_copy(
-            grid_before_rules, grid_after_rules, num_rows, num_cols)
+        is_grid_unchanged = check_grid_change_and_copy(grid_before_rules, grid_after_rules)
 
         if is_grid_unchanged:
             break
 
-    return find_num_occupied(grid_after_rules, num_rows, num_cols)
+    return find_num_occupied(grid_after_rules)
 
 
 def check_neighbours_pt1(row_idx, col_idx, grid):
@@ -71,7 +74,7 @@ def check_neighbours_pt1(row_idx, col_idx, grid):
     return num_neighbours
 
 
-def check_grid_change_and_copy(grid_before_rules, grid_after_rules, num_rows, num_cols):
+def check_grid_change_and_copy(grid_before_rules, grid_after_rules):
     """
     1. Check if applying the rules changed the grid
     2. Copy the 'after' grid to the 'before' grid in
@@ -88,7 +91,7 @@ def check_grid_change_and_copy(grid_before_rules, grid_after_rules, num_rows, nu
     return is_grid_unchanged
 
 
-def find_num_occupied(grid, num_rows, num_cols):
+def find_num_occupied(grid):
     num_occupied_seats = 0
     for row_idx in range(1, num_rows - 1):
         for col_idx in range(1, num_cols - 1):
@@ -99,7 +102,7 @@ def find_num_occupied(grid, num_rows, num_cols):
 
 
 def part2():
-    grid_before_rules, grid_after_rules, num_rows, num_cols = process_input()
+    grid_before_rules, grid_after_rules = process_input()
 
     while True:
         for row_idx in range(1, num_rows - 1):
@@ -114,13 +117,12 @@ def part2():
                 elif seat_state == '#' and num_neighbours >= 5:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
-        is_grid_unchanged = check_grid_change_and_copy(
-            grid_before_rules, grid_after_rules, num_rows, num_cols)
+        is_grid_unchanged = check_grid_change_and_copy(grid_before_rules, grid_after_rules)
 
         if is_grid_unchanged:
             break
 
-    return find_num_occupied(grid_after_rules, num_rows, num_cols)
+    return find_num_occupied(grid_after_rules)
 
 
 def check_neighbours_pt2(row_idx, col_idx, grid):
@@ -130,7 +132,6 @@ def check_neighbours_pt2(row_idx, col_idx, grid):
                       "West": (0, -1), "North-West": (-1, -1)}
 
     num_neighbours = 0
-    num_rows, num_cols = len(grid), len(grid[0])
     for nb_row_dirn, nb_col_dirn in neighbour_dirn.values():
         nb_row = row_idx
         nb_col = col_idx
