@@ -49,27 +49,13 @@ def part1():
                 elif seat_state == '#' and num_neighbours >= 4:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
-        # 1. Check if applying the rules changed the grid
-        # 2. Copy the 'after' grid to the 'before' grid in
-        #    preparation for the next iteration of rules
-        is_grid_unchanged = True
-        for row_idx in range(1, num_rows - 1):
-            for col_idx in range(1, num_cols - 1):
-                val_after = grid_after_rules[row_idx][col_idx]
-                is_val_unchanged = grid_before_rules[row_idx][col_idx] == val_after
-                is_grid_unchanged = is_grid_unchanged and is_val_unchanged
-                grid_before_rules[row_idx][col_idx] = val_after
+        is_grid_unchanged = check_grid_change_and_copy(
+            grid_before_rules, grid_after_rules, num_rows, num_cols)
 
         if is_grid_unchanged:
             break
 
-    num_occupied_seats = 0
-    for row_idx in range(1, num_rows - 1):
-        for col_idx in range(1, num_cols - 1):
-            if grid_after_rules[row_idx][col_idx] == '#':
-                num_occupied_seats += 1
-
-    return num_occupied_seats
+    return find_num_occupied(grid_after_rules, num_rows, num_cols)
 
 
 def check_neighbours_pt1(row_idx, col_idx, grid):
@@ -85,14 +71,37 @@ def check_neighbours_pt1(row_idx, col_idx, grid):
     return num_neighbours
 
 
+def check_grid_change_and_copy(grid_before_rules, grid_after_rules, num_rows, num_cols):
+    """
+    1. Check if applying the rules changed the grid
+    2. Copy the 'after' grid to the 'before' grid in
+       preparation for the next iteration of rules
+    """
+    is_grid_unchanged = True
+    for row_idx in range(1, num_rows - 1):
+        for col_idx in range(1, num_cols - 1):
+            val_after = grid_after_rules[row_idx][col_idx]
+            is_val_unchanged = grid_before_rules[row_idx][col_idx] == val_after
+            is_grid_unchanged = is_grid_unchanged and is_val_unchanged
+            grid_before_rules[row_idx][col_idx] = val_after
+
+    return is_grid_unchanged
+
+
+def find_num_occupied(grid, num_rows, num_cols):
+    num_occupied_seats = 0
+    for row_idx in range(1, num_rows - 1):
+        for col_idx in range(1, num_cols - 1):
+            if grid[row_idx][col_idx] == '#':
+                num_occupied_seats += 1
+
+    return num_occupied_seats
+
+
 def part2():
     grid_before_rules, grid_after_rules, num_rows, num_cols = process_input()
 
-    # Only stop once the application of
-    # the rules produces no changes in state
     while True:
-        # Since a boundary was added to the original grid,
-        # the indices are as such to process only the original grid
         for row_idx in range(1, num_rows - 1):
             for col_idx in range(1, num_cols - 1):
                 seat_state = grid_before_rules[row_idx][col_idx]
@@ -105,27 +114,13 @@ def part2():
                 elif seat_state == '#' and num_neighbours >= 5:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
-        # 1. Check if applying the rules changed the grid
-        # 2. Copy the 'after' grid to the 'before' grid in
-        #    preparation for the next iteration of rules
-        is_grid_unchanged = True
-        for row_idx in range(1, num_rows - 1):
-            for col_idx in range(1, num_cols - 1):
-                val_after = grid_after_rules[row_idx][col_idx]
-                is_val_unchanged = grid_before_rules[row_idx][col_idx] == val_after
-                is_grid_unchanged = is_grid_unchanged and is_val_unchanged
-                grid_before_rules[row_idx][col_idx] = val_after
+        is_grid_unchanged = check_grid_change_and_copy(
+            grid_before_rules, grid_after_rules, num_rows, num_cols)
 
         if is_grid_unchanged:
             break
 
-    num_occupied_seats = 0
-    for row_idx in range(1, num_rows - 1):
-        for col_idx in range(1, num_cols - 1):
-            if grid_after_rules[row_idx][col_idx] == '#':
-                num_occupied_seats += 1
-
-    return num_occupied_seats
+    return find_num_occupied(grid_after_rules, num_rows, num_cols)
 
 
 def check_neighbours_pt2(row_idx, col_idx, grid):
