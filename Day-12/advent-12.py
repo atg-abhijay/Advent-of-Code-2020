@@ -3,13 +3,18 @@ URL for challenge: https://adventofcode.com/2020/day/12
 """
 
 
-def part1():
+def process_input():
     f = open("advent-12-input.txt")
     commands = []
     for line in f.readlines():
         line = line.strip()
         commands.append((line[0], int(line[1:])))
 
+    return commands
+
+
+def part1():
+    commands = process_input()
     x_pos, y_pos = 0, 0
     current_dirn = 'E'
     for action, amount in commands:
