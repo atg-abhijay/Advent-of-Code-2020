@@ -50,6 +50,11 @@ def part2():
     current_idx, current_sum = 0, 0
     start_idx, end_idx = 0, 0
     target_list = []
+    # Keep building the sum until it exceeds
+    # the invalid number. Then, move the start
+    # index forward until the sum is lower
+    # than the invalid number again. Break
+    # when the sum equals the target.
     while True and current_idx < sub_list_size:
         if current_sum == invalid_num:
             target_list = sub_list[start_idx:end_idx+1]
