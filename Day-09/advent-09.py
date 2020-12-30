@@ -11,15 +11,18 @@ def part1():
 
     preamble_size = 25
     preamble = set(input_nums[:preamble_size])
-    # print(input_nums)
-    # print(preamble)
 
     idx_to_remove = -1
     target_num = 0
     for num in input_nums[preamble_size:]:
+        # Update the preamble to keep
+        # track of last 25 numbers
         if idx_to_remove != -1:
             preamble.remove(input_nums[idx_to_remove])
 
+        # If the number can be formed using the
+        # last 25 numbers, the intersection will be
+        # of size at least 2.
         complement_set = set(num - val for val in preamble)
         intxn_size = len(preamble.intersection(complement_set))
         if intxn_size < 2:
