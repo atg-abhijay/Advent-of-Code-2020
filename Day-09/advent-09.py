@@ -3,12 +3,17 @@ URL for challenge: https://adventofcode.com/2020/day/9
 """
 
 
-def part1():
+def process_input():
     f = open("advent-09-input.txt")
     input_nums = []
     for line in f.readlines():
         input_nums.append(int(line.strip()))
 
+    return input_nums
+
+
+def part1():
+    input_nums = process_input()
     preamble_size = 25
     preamble = set(input_nums[:preamble_size])
 
