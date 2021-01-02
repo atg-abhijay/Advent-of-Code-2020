@@ -26,6 +26,12 @@ def part1():
 
 
 def part2():
+    """
+    Check PR description for more details.
+    Solve using the Chinese Remainder Theorem.
+    (Made the assumption that the bus IDs are
+    pairwise co-prime)
+    """
     f = open("advent-13-input.txt")
     parsed_input = f.readlines()[1].strip().split(',')
     buses, offsets = [], []
@@ -34,6 +40,12 @@ def part2():
             buses.append(int(b_id))
             offsets.append(idx)
 
+    """
+    For example:
+    For a bus with ID 19 and offset 87,
+    19x - 87 = t -> 19(x-4) - 11 = t ->
+    19y - 11 = t => t = 8 (mod 19)
+    """
     mod_values = [0]
     for bus_id, offset in zip(buses[1:], offsets[1:]):
         mod_values.append(bus_id - (offset % bus_id))
