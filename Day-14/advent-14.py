@@ -3,7 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/14
 """
 
 
-def part1():
+def process_input():
     f = open("advent-14-input.txt")
     instructions = []
     for line in f.readlines():
@@ -14,6 +14,11 @@ def part1():
             address = int(fields[0][4:-1])
             instructions.append(("mem", address, int(fields[1])))
 
+    return instructions
+
+
+def part1():
+    instructions = process_input()
     mask_with_zeroes, mask_with_ones = 0, 0
     addresses = {}
     for instr in instructions:
