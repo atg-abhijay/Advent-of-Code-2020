@@ -3,7 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/16
 """
 
 
-def part1():
+def process_input():
     f = open("advent-16-input.txt")
     ticket_fields = {}
     puzzle_input = f.readlines()
@@ -32,7 +32,11 @@ def part1():
         ticket = [int(x) for x in line.strip().split(',')]
         nearby_tickets.append(ticket)
 
+    return ticket_fields, my_ticket, nearby_tickets
 
+
+def part1():
+    ticket_fields, _, nearby_tickets = process_input()
     invalid_vals_sum = 0
     for ticket in nearby_tickets:
         invalid_vals_sum += is_ticket_valid(ticket, ticket_fields)[1]
