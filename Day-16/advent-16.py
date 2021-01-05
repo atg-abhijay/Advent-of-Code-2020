@@ -8,6 +8,7 @@ def process_input():
     ticket_fields = {}
     puzzle_input = f.readlines()
     current_idx = 0
+    # Parse ticket fields
     for idx, line in enumerate(puzzle_input):
         current_idx = idx
         if line == '\n':
@@ -15,17 +16,20 @@ def process_input():
 
         field = line.strip().split(': ')
         ranges = field[1].split(' or ')
-        field_ranges = []
+        field_ranges = set()
         for r in ranges:
             r = r.split('-')
-            field_ranges.append((int(r[0]), int(r[1])))
+            r = set(range(int(r[0]), int(r[1])+ 1))
+            field_ranges = field_ranges.union(r)
 
         ticket_fields[field[0]] = field_ranges
 
+    # Parse my ticket
     current_idx += 2
     my_ticket = puzzle_input[current_idx].strip().split(',')
     my_ticket = [int(x) for x in my_ticket]
 
+    # Parse nearby tickets
     current_idx += 3
     nearby_tickets = []
     for line in puzzle_input[current_idx:]:
@@ -47,11 +51,9 @@ def part1():
 def is_ticket_valid(ticket, ticket_fields):
     for val in ticket:
         is_val_valid = False
-        for first_range, second_range in ticket_fields.values():
-            check_a = val > first_range[0] and val <= first_range[1]
-            check_b = val > second_range[0] and val <= second_range[1]
-            is_val_valid = is_val_valid or check_a or check_b
-            if is_val_valid:
+        for valid_range in ticket_fields.values():
+            if val in valid_range:
+                is_val_valid = True
                 break
 
         if not is_val_valid:
