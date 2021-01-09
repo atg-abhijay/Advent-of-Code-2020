@@ -42,30 +42,8 @@ def solve(is_four_dimn):
     pocket_dimn_after = deepcopy(pocket_dimn)
 
     for i in range(6):
-        # The state transitions will occur for the
-        # current input AS WELL AS the immediate
-        # neighbours. Add those neighbours.
-        for w, hypercube in pocket_dimn.items():
-            for z, layer in hypercube.items():
-                for x, row in layer.items():
-                    for y, state in row.items():
-                        neighbours = generate_neighbour_locations(
-                            (w, z, x, y), is_four_dimn)
-                        add_neighbours_to_dimn(neighbours, pocket_dimn_after)
-
-        # This dimension contains the current input
-        # and the immediate neighbours. Apply the
-        # state transitions for all of them with
-        # respect to the original dimension.
-        for w, hypercube in pocket_dimn_after.items():
-            for z, layer in hypercube.items():
-                for x, row in layer.items():
-                    for y, state in row.items():
-                        neighbours = generate_neighbour_locations(
-                            (w, z, x, y), is_four_dimn)
-                        pocket_dimn_after[w][z][x][y] = get_new_state(
-                            state, neighbours, pocket_dimn)
-
+        expand_dimension(pocket_dimn, pocket_dimn_after, is_four_dimn)
+        run_cycle(pocket_dimn, pocket_dimn_after, is_four_dimn)
         # Copy over the modified dimension
         # in preparation for the next iteration
         pocket_dimn = deepcopy(pocket_dimn_after)
@@ -79,6 +57,34 @@ def solve(is_four_dimn):
                     num_active_cubes += state
 
     return num_active_cubes
+
+
+def expand_dimension(pocket_dimn, pocket_dimn_after, is_four_dimn):
+    # The state transitions will occur for the
+    # current input AS WELL AS the immediate
+    # neighbours. Add those neighbours.
+    for w, hypercube in pocket_dimn.items():
+        for z, layer in hypercube.items():
+            for x, row in layer.items():
+                for y, state in row.items():
+                    neighbours = generate_neighbour_locations(
+                        (w, z, x, y), is_four_dimn)
+                    add_neighbours_to_dimn(neighbours, pocket_dimn_after)
+
+
+def run_cycle(pocket_dimn, pocket_dimn_after, is_four_dimn):
+    # The "after" dimension contains the current input
+    # and the immediate neighbours. Apply the
+    # state transitions for all of them with
+    # respect to the original dimension.
+    for w, hypercube in pocket_dimn_after.items():
+        for z, layer in hypercube.items():
+            for x, row in layer.items():
+                for y, state in row.items():
+                    neighbours = generate_neighbour_locations(
+                        (w, z, x, y), is_four_dimn)
+                    pocket_dimn_after[w][z][x][y] = get_new_state(
+                        state, neighbours, pocket_dimn)
 
 
 def generate_neighbour_locations(target, is_four_dimn):
