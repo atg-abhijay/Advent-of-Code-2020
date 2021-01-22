@@ -15,6 +15,43 @@ class Node(object):
         self.parent = None
 
 
+def process_input():
+    f = open("advent-18-input.txt")
+    expressions = []
+    for line in f.readlines():
+        line = line.strip().split(' ')
+        expression = []
+        for elem in line:
+            parsed_elem = re.split('([()])', elem)
+            expression += [pe for pe in parsed_elem if pe]
+
+        expressions.append(expression)
+
+    return expressions
+
+
+def part1():
+    expressions = process_input()
+    total_sum = 0
+    for expression in expressions:
+        tree = create_tree(expression, 0)[0]
+        total_sum += evaluate_tree(tree)
+
+    return total_sum
+
+
+def part2():
+    expressions = process_input()
+    total_sum = 0
+    for expression in expressions:
+        tree = create_tree(expression, 0)[0]
+        rearrange_nodes(tree)
+        root_node = get_root_node(tree)
+        total_sum += evaluate_tree(root_node)
+
+    return total_sum
+
+
 def create_tree(expression, nesting_depth):
     digits = set(string.digits)
     current_node = Node('+', nesting_depth)
@@ -94,41 +131,6 @@ def rearrange_nodes(node):
         node.parent = left_child
 
     return node
-
-
-def part1():
-    f = open("advent-18-input.txt")
-    total_sum = 0
-    for line in f.readlines():
-        line = line.strip().split(' ')
-        expression = []
-        for elem in line:
-            parsed_elem = re.split('([()])', elem)
-            expression += [pe for pe in parsed_elem if pe]
-
-        tree = create_tree(expression, 0)[0]
-        output = evaluate_tree(tree)
-        total_sum += output
-
-    return total_sum
-
-
-def part2():
-    f = open("advent-18-input.txt")
-    total_sum = 0
-    for line in f.readlines():
-        line = line.strip().split(' ')
-        expression = []
-        for elem in line:
-            parsed_elem = re.split('([()])', elem)
-            expression += [pe for pe in parsed_elem if pe]
-
-        tree = create_tree(expression, 0)[0]
-        rearrange_nodes(tree)
-        root_node = get_root_node(tree)
-        total_sum += evaluate_tree(root_node)
-
-    return total_sum
 
 
 def run():
