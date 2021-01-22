@@ -33,7 +33,7 @@ def part1():
     expressions = process_input()
     total_sum = 0
     for expression in expressions:
-        tree = create_tree(expression)[0]
+        tree = create_tree(expression)
         total_sum += evaluate_tree(tree)
 
     return total_sum
@@ -43,7 +43,7 @@ def part2():
     expressions = process_input()
     total_sum = 0
     for expression in expressions:
-        tree = create_tree(expression)[0]
+        tree = create_tree(expression)
         rearrange_nodes(tree)
         root_node = get_root_node(tree)
         total_sum += evaluate_tree(root_node)
@@ -83,7 +83,7 @@ def create_tree(expression):
 
         idx += 1
 
-    return current_node, idx
+    return current_node
 
 
 def evaluate_tree(node):
