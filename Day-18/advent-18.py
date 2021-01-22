@@ -7,9 +7,8 @@ import string, re
 
 
 class Node(object):
-    def __init__(self, value, depth):
+    def __init__(self, value):
         self.value = value
-        self.nesting_depth = depth
         self.left_child = None
         self.right_child = None
         self.parent = None
@@ -34,7 +33,7 @@ def part1():
     expressions = process_input()
     total_sum = 0
     for expression in expressions:
-        tree = create_tree(expression, 0)[0]
+        tree = create_tree(expression)[0]
         total_sum += evaluate_tree(tree)
 
     return total_sum
@@ -44,7 +43,7 @@ def part2():
     expressions = process_input()
     total_sum = 0
     for expression in expressions:
-        tree = create_tree(expression, 0)[0]
+        tree = create_tree(expression)[0]
         rearrange_nodes(tree)
         root_node = get_root_node(tree)
         total_sum += evaluate_tree(root_node)
@@ -52,10 +51,10 @@ def part2():
     return total_sum
 
 
-def create_tree(expression, nesting_depth):
+def create_tree(expression):
     digits = set(string.digits)
-    current_node = Node('+', nesting_depth)
-    current_node.left_child = Node(0, nesting_depth)
+    current_node = Node('+')
+    current_node.left_child = Node(0)
     current_node.left_child.parent = current_node
     idx = 0
 
@@ -63,18 +62,18 @@ def create_tree(expression, nesting_depth):
         element = expression[idx]
 
         if set(element).issubset(digits):
-            node = Node(int(element), nesting_depth)
+            node = Node(int(element))
             current_node.right_child = node
             node.parent = current_node
 
         elif element in ['+', '*']:
-            node = Node(element, nesting_depth)
+            node = Node(element)
             node.left_child = current_node
             current_node.parent = node
             current_node = node
 
         elif element == '(':
-            sub_result = create_tree(expression[idx+1:], nesting_depth+1)
+            sub_result = create_tree(expression[idx+1:])
             current_node.right_child = sub_result[0]
             sub_result[0].parent = current_node
             idx += sub_result[1]
