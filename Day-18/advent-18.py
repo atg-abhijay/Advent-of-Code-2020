@@ -1,5 +1,7 @@
 """
 URL for challenge: https://adventofcode.com/2020/day/18
+
+Check PR description for working of solution, notes, etc.
 """
 
 
@@ -45,6 +47,8 @@ def part2():
     for expression in expressions:
         tree = create_tree(expression)
         rearrange_nodes(tree)
+        # The root node after rearrangement may be
+        # different from the one before rearrangement
         root_node = get_root_node(tree)
         total_sum += evaluate_tree(root_node)
 
