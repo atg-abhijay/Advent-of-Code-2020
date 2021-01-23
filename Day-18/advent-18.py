@@ -6,6 +6,9 @@ Check PR description for working of solution, notes, etc.
 
 
 import string, re
+import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
+import matplotlib.pyplot as plt
 
 
 class Node(object):
@@ -145,6 +148,39 @@ def run():
     else:
         print("You need to enter either 1 or 2")
         exit(1)
+
+    # (Only one instance of plt.show() is required)
+    # This will get used when draw_tree() is called
+    plt.show()
+
+
+def gather_edges(node):
+    all_edges = []
+
+    if node.left_child:
+        all_edges.append((node, node.left_child))
+        all_edges += gather_edges(node.left_child)
+
+    if node.right_child:
+        all_edges.append((node, node.right_child))
+        all_edges += gather_edges(node.right_child)
+
+    return all_edges
+
+
+def draw_tree(root_node):
+    all_edges = gather_edges(root_node)
+    tree = nx.Graph()
+    tree.add_edges_from(all_edges)
+    nodes = list(tree.nodes)
+    labels = {}
+    for node in nodes:
+        labels[node] = node.value
+
+    pos = graphviz_layout(tree, prog='dot')
+    plt.figure()
+    nx.draw(tree, pos=pos, with_labels=False, arrows=False)
+    nx.draw_networkx_labels(tree, pos=pos, labels=labels)
 
 
 run()
