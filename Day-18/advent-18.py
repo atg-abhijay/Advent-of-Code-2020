@@ -117,8 +117,8 @@ def rearrange_nodes(node):
     if not node.left_child and not node.right_child:
         return node
 
-    rearrange_nodes(node.right_child)
     rearrange_nodes(node.left_child)
+    rearrange_nodes(node.right_child)
 
     left_child = node.left_child
     if node.value == '+' and left_child.value == '*':
