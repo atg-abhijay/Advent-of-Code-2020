@@ -36,7 +36,12 @@ def part1():
 
     num_valid = 0
     for message in messages:
-        if is_message_valid(message, '0', rules)[0]:
+        is_valid, latest_idx = is_message_valid(message, '0', rules)
+        # If a portion of the message is left over
+        # after iterating through the rules, then
+        # those are extra characters and the
+        # message is not valid.
+        if is_valid and not message[latest_idx:]:
             num_valid += 1
 
     return num_valid
@@ -60,12 +65,12 @@ def is_message_valid(message, target_val, rules):
     rule = rules[target_val]
     msg_passes_any_rule = False
     for sub_rule in rule.sub_rules:
-        idx = 0
+        latest_idx = 0
         msg_passes_subrule = True
         for child_rule in sub_rule:
-            sub_result = is_message_valid(message[idx:], child_rule, rules)
+            sub_result = is_message_valid(message[latest_idx:], child_rule, rules)
             msg_passes_subrule &= sub_result[0]
-            idx += sub_result[1]
+            latest_idx += sub_result[1]
             if not msg_passes_subrule:
                 break
 
@@ -73,14 +78,7 @@ def is_message_valid(message, target_val, rules):
         if msg_passes_any_rule:
             break
 
-    # At the top level (rule '0'), if a portion
-    # of the message is left over after iterating
-    # through all the sub-rules, then those are
-    # extra characters.
-    if target_val == '0' and message[idx:]:
-        return False, 0
-
-    return msg_passes_any_rule, idx
+    return msg_passes_any_rule, latest_idx
 
 
 def part2():
