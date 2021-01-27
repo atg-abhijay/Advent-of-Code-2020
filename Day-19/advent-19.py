@@ -43,12 +43,20 @@ def part1():
 
 
 def is_message_valid(message, target_val, rules):
+    # If there are rules to follow but
+    # the message is empty, the message
+    # is shorter than required.
     if not message:
         return False, 0
 
+    # The alphabets will not
+    # be in the dictionary.
     if target_val not in rules:
         return message[0] == target_val, 1
 
+    # The message has to completely pass
+    # a sub-rule. The message has to pass
+    # at least one of the sub-rules.
     rule = rules[target_val]
     msg_passes_any_rule = False
     for sub_rule in rule.sub_rules:
@@ -65,6 +73,10 @@ def is_message_valid(message, target_val, rules):
         if msg_passes_any_rule:
             break
 
+    # At the top level (rule '0'), if a portion
+    # of the message is left over after iterating
+    # through all the sub-rules, then those are
+    # extra characters.
     if target_val == '0' and message[idx:]:
         return False, 0
 
