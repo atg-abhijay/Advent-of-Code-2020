@@ -3,11 +3,10 @@ URL for challenge: https://adventofcode.com/2020/day/19
 """
 
 
-class Node(object):
+class Rule(object):
     def __init__(self, value, sub_rules):
         self.value = value
         self.sub_rules = sub_rules
-        self.strings = []
 
 
 def process_input():
@@ -25,7 +24,7 @@ def process_input():
         for sub_rule in sub_rule_sequences:
             sub_rules.append([x.replace('"', '') for x in sub_rule.split()])
 
-        rules[rule_num] = Node(rule_num, sub_rules)
+        rules[rule_num] = Rule(rule_num, sub_rules)
 
     messages = [line.strip() for line in puzzle_input[index+1:]]
 
@@ -34,40 +33,42 @@ def process_input():
 
 def part1():
     rules, messages = process_input()
-    all_strings = set(build_strings('0', rules))
 
     num_valid = 0
     for message in messages:
-        if message in all_strings:
+        if is_message_valid(message, '0', rules)[0]:
             num_valid += 1
 
     return num_valid
 
 
-def build_strings(rule_val, rules):
-    if rule_val not in rules:
-        return [rule_val]
+def is_message_valid(message, target_val, rules):
+    if not message:
+        return False, 0
 
-    rule = rules[rule_val]
-    if rule.strings:
-        return rule.strings
+    if target_val not in rules:
+        return message[0] == target_val, 1
 
+    rule = rules[target_val]
+    msg_passes_any_rule = False
     for sub_rule in rule.sub_rules:
-        sub_rule_strings = []
-        for next_rule in sub_rule:
-            child_strings = build_strings(next_rule, rules)
-            if not sub_rule_strings:
-                sub_rule_strings = child_strings.copy()
-            else:
-                current_strings = sub_rule_strings.copy()
-                sub_rule_strings.clear()
-                for s in current_strings:
-                    for t in child_strings:
-                        sub_rule_strings.append(s + t)
+        idx = 0
+        msg_passes_subrule = True
+        for child_rule in sub_rule:
+            sub_result = is_message_valid(message[idx:], child_rule, rules)
+            msg_passes_subrule &= sub_result[0]
+            idx += sub_result[1]
+            if not msg_passes_subrule:
+                break
 
-        rule.strings += sub_rule_strings
+        msg_passes_any_rule |= msg_passes_subrule
+        if msg_passes_any_rule:
+            break
 
-    return rule.strings
+    if target_val == '0' and message[idx:]:
+        return False, 0
+
+    return msg_passes_any_rule, idx
 
 
 def part2():
