@@ -10,7 +10,7 @@ class Node(object):
         self.strings = []
 
 
-def part1():
+def process_input():
     f = open("advent-19-input.txt")
     index, rules = 0, {}
     puzzle_input = f.readlines()
@@ -28,6 +28,12 @@ def part1():
         rules[rule_num] = Node(rule_num, sub_rules)
 
     messages = [line.strip() for line in puzzle_input[index+1:]]
+
+    return rules, messages
+
+
+def part1():
+    rules, messages = process_input()
     all_strings = set(build_strings('0', rules))
 
     num_valid = 0
