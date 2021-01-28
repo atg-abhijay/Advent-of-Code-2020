@@ -1,5 +1,7 @@
 """
 URL for challenge: https://adventofcode.com/2020/day/19
+
+Check PR description for brief notes and comments.
 """
 
 
@@ -7,6 +9,7 @@ class Rule(object):
     def __init__(self, value, sub_rules):
         self.value = value
         self.sub_rules = sub_rules
+        self.strings = []
 
 
 def process_input():
@@ -47,6 +50,92 @@ def part1():
     return num_valid
 
 
+def build_strings(rule_val, rules):
+    """
+    Return a list of strings that
+    are valid for the given rule.
+    """
+    if rule_val not in rules:
+        return [rule_val]
+
+    rule = rules[rule_val]
+    if rule.strings:
+        return rule.strings
+
+    for sub_rule in rule.sub_rules:
+        sub_rule_strings = []
+        for next_rule in sub_rule:
+            child_strings = build_strings(next_rule, rules)
+            if not sub_rule_strings:
+                sub_rule_strings = child_strings.copy()
+            else:
+                current_strings = sub_rule_strings.copy()
+                sub_rule_strings.clear()
+                for s in current_strings:
+                    for t in child_strings:
+                        sub_rule_strings.append(s + t)
+
+        rule.strings += sub_rule_strings
+
+    return rule.strings
+
+
+def part2():
+    """
+    Rule 0 produces strings that are of the form -
+              (42)x (42)y (31)y
+    where rules 42 and 31 produce a constant list
+    of strings having the same lengths. x and y
+    denote the number of repetitions of those rules.
+    Any string that follows rule 0 must have the above form.
+    """
+    rules, messages = process_input()
+
+    num_valid = 0
+    strings_42 = set(build_strings('42', rules))
+    strings_31 = set(build_strings('31', rules))
+    elem = strings_42.pop()
+    str_len = len(elem)
+    strings_42.add(elem)
+
+    for message in messages:
+        appearances_42, appearances_31 = 0, 0
+        is_valid = True
+        while message:
+            sub_message = message[:str_len]
+            if sub_message in strings_42:
+                appearances_42 += 1
+            elif sub_message in strings_31:
+                break
+            else:
+                is_valid = False
+                break
+
+            message = message[str_len:]
+
+        while message:
+            sub_message = message[:str_len]
+            if sub_message in strings_31:
+                appearances_31 += 1
+
+            else:
+                is_valid = False
+                break
+
+            message = message[str_len:]
+
+        if not is_valid:
+            continue
+        elif appearances_31 >= appearances_42:
+            continue
+        elif appearances_31 == 0:
+            continue
+
+        num_valid += 1
+
+    return num_valid
+
+
 def is_message_valid(message, target_val, rules):
     # If there are rules to follow but
     # the message is empty, the message
@@ -79,10 +168,6 @@ def is_message_valid(message, target_val, rules):
             break
 
     return msg_passes_any_rule, latest_idx
-
-
-def part2():
-    return
 
 
 def run():
