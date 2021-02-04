@@ -157,7 +157,8 @@ def is_message_valid(message, target_val, rules):
         latest_idx = 0
         msg_passes_subrule = True
         for child_rule in sub_rule:
-            sub_result = is_message_valid(message[latest_idx:], child_rule, rules)
+            sub_result = is_message_valid(
+                message[latest_idx:], child_rule, rules)
             msg_passes_subrule &= sub_result[0]
             latest_idx += sub_result[1]
             if not msg_passes_subrule:

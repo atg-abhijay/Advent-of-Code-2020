@@ -53,7 +53,8 @@ def part1():
                 elif seat_state == '#' and num_neighbours >= 4:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
-        is_grid_unchanged = check_grid_change_and_copy(grid_before_rules, grid_after_rules)
+        is_grid_unchanged = check_grid_change_and_copy(
+            grid_before_rules, grid_after_rules)
 
         if is_grid_unchanged:
             break
@@ -117,7 +118,8 @@ def part2():
                 elif seat_state == '#' and num_neighbours >= 5:
                     grid_after_rules[row_idx][col_idx] = 'L'
 
-        is_grid_unchanged = check_grid_change_and_copy(grid_before_rules, grid_after_rules)
+        is_grid_unchanged = check_grid_change_and_copy(
+            grid_before_rules, grid_after_rules)
 
         if is_grid_unchanged:
             break

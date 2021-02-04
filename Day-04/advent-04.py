@@ -4,6 +4,7 @@ URL for challenge: https://adventofcode.com/2020/day/4
 
 import string
 
+
 def process_input():
     f = open("advent-04-input.txt")
     passports = [{}]
@@ -19,8 +20,10 @@ def process_input():
 
     return passports
 
+
 def part1_verification(papo):
-    valid_fields = set(["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid"])
+    valid_fields = set(["byr", "iyr", "eyr", "hgt",
+                        "hcl", "ecl", "pid", "cid"])
     papo_fields = set(papo.keys())
     num_fields = len(papo_fields)
     if num_fields > 8 or num_fields < 7:
@@ -34,6 +37,7 @@ def part1_verification(papo):
 
     return True
 
+
 def part1():
     passports = process_input()
     num_valid_papos = 0
@@ -43,6 +47,7 @@ def part1():
             num_valid_papos += 1
 
     return num_valid_papos
+
 
 def part2():
     passports = process_input()
@@ -90,7 +95,8 @@ def part2():
 
         # Eye color
         eye_color = papo["ecl"]
-        valid_eye_colors = set(["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])
+        valid_eye_colors = set(
+            ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])
         if eye_color not in valid_eye_colors:
             continue
 
@@ -103,6 +109,7 @@ def part2():
 
     return num_valid_papos
 
+
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
     if chall == 1:
@@ -112,5 +119,6 @@ def run():
     else:
         print("You need to enter either 1 or 2")
         exit(1)
+
 
 run()

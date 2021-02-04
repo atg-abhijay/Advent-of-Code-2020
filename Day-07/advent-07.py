@@ -11,6 +11,7 @@ class Bag(object):
     Use a deque to expedite popping
     of elements from the left.
     """
+
     def __init__(self, bag_type):
         self.type = bag_type
         self.children = deque()
