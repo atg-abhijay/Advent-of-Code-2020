@@ -2,6 +2,7 @@
 URL for challenge: https://adventofcode.com/2020/day/2
 """
 
+
 def part1():
     f = open("advent-02-input.txt")
     num_valid_pwds = 0
@@ -20,6 +21,7 @@ def part1():
 
     return num_valid_pwds
 
+
 def part2():
     f = open("advent-02-input.txt")
     num_valid_pwds = 0
@@ -37,6 +39,7 @@ def part2():
 
     return num_valid_pwds
 
+
 def run():
     chall = int(input("Please enter either 1 or 2 for the challenges: "))
     if chall == 1:
@@ -46,5 +49,6 @@ def run():
     else:
         print("You need to enter either 1 or 2")
         exit(1)
+
 
 run()

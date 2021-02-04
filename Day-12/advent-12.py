@@ -61,9 +61,11 @@ def part2():
             ship_x += (waypoint_x * amount)
             ship_y += (waypoint_y * amount)
         elif action in ['L', 'R']:
-            waypoint_x, waypoint_y = turn_waypoint(waypoint_x, waypoint_y, action, amount)
+            waypoint_x, waypoint_y = turn_waypoint(
+                waypoint_x, waypoint_y, action, amount)
         else:
-            waypoint_x, waypoint_y = move(waypoint_x, waypoint_y, amount, action)
+            waypoint_x, waypoint_y = move(
+                waypoint_x, waypoint_y, amount, action)
 
     return abs(ship_x) + abs(ship_y)
 

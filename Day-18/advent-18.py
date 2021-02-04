@@ -5,10 +5,11 @@ Check PR description for working of solution, notes, etc.
 """
 
 
-import string, re
+import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
-import matplotlib.pyplot as plt
+import re
+import string
 
 
 class Node(object):
