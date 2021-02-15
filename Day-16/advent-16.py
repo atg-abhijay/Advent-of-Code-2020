@@ -5,6 +5,7 @@ URL for challenge: https://adventofcode.com/2020/day/16
 
 def process_input():
     f = open("advent-16-input.txt")
+    # (k, v) = (field name, (mathematical) set of valid values)
     ticket_fields = {}
     puzzle_input = f.readlines()
     current_idx = 0
@@ -19,7 +20,7 @@ def process_input():
         field_ranges = set()
         for r in ranges:
             r = r.split('-')
-            r = set(range(int(r[0]), int(r[1])+ 1))
+            r = set(range(int(r[0]), int(r[1]) + 1))
             field_ranges = field_ranges.union(r)
 
         ticket_fields[field[0]] = field_ranges
@@ -41,25 +42,36 @@ def process_input():
 
 def part1():
     ticket_fields, _, nearby_tickets = process_input()
+    # Create a set that contains the union of
+    # the valid values for all of the fields
+    all_valid_vals = set()
+    for valid_range in ticket_fields.values():
+        all_valid_vals = all_valid_vals.union(valid_range)
+
     invalid_vals_sum = 0
     for ticket in nearby_tickets:
-        invalid_vals_sum += is_ticket_valid(ticket, ticket_fields)[1]
+        invalid_vals_sum += is_ticket_valid(ticket, all_valid_vals)[1]
 
     return invalid_vals_sum
 
 
-def is_ticket_valid(ticket, ticket_fields):
-    for val in ticket:
-        is_val_valid = False
-        for valid_range in ticket_fields.values():
-            if val in valid_range:
-                is_val_valid = True
-                break
+def is_ticket_valid(ticket, all_valid_vals):
+    invalid_vals = set(ticket).difference(all_valid_vals)
+    if not invalid_vals:
+        return True, 0
 
-        if not is_val_valid:
-            return False, val
+    elif len(invalid_vals) == 1:
+        return False, invalid_vals.pop()
 
-    return True, 0
+    else:
+        print("More than one invalid value!")
+        exit(1)
+
+
+
+
+
+
 
 
 def part2():
