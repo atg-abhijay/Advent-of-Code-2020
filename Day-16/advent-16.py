@@ -56,9 +56,7 @@ def part1():
     ticket_fields, _, nearby_tickets = process_input()
     # Create a set that contains the union of
     # the valid values for all of the fields
-    all_valid_vals = set()
-    for valid_range in ticket_fields.values():
-        all_valid_vals = all_valid_vals.union(valid_range)
+    all_valid_vals = set.union(*ticket_fields.values())
 
     invalid_vals_sum = 0
     for ticket in nearby_tickets:
@@ -79,29 +77,19 @@ def part2():
     ticket_fields, my_ticket, nearby_tickets = process_input()
     # Create a set that contains the union of
     # the valid values for all of the fields
-    all_valid_vals = set()
-    for valid_range in ticket_fields.values():
-        all_valid_vals = all_valid_vals.union(valid_range)
+    all_valid_vals = set.union(*ticket_fields.values())
+    valid_tickets = [t for t in nearby_tickets if is_ticket_valid(t, all_valid_vals)[0]]
 
-    # Determine valid tickets
-    valid_tickets = []
-    for ticket in nearby_tickets:
-        if is_ticket_valid(ticket, all_valid_vals)[0]:
-            valid_tickets.append(ticket)
-
-    matrix = []
-    num_fields = len(valid_tickets[0])
-    fields = list(ticket_fields.keys())
+    matrix, fields = [], list(ticket_fields.keys())
 
     # Build a matrix where xth row represents fit
     # of xth column (values from all valid tickets
     # at that column) against each of the fields
-    for column_idx in range(num_fields):
+    for column_idx in range(len(valid_tickets[0])):
         column_values = {ticket[column_idx] for ticket in valid_tickets}
         field_fits = []
         for field in fields:
-            valid_range = ticket_fields[field]
-            if column_values.issubset(valid_range):
+            if column_values.issubset(ticket_fields[field]):
                 field_fits.append(1)
             else:
                 field_fits.append(0)
@@ -121,14 +109,16 @@ def part2():
     # print_matrix(matrix, "After simplification - ")
     output = 1
     for idx, field in enumerate(fields):
-        if "departure" in field:
-            for row in matrix:
-                if row.elements[idx]:
-                    # print(field, ':')
-                    # print("- Ticket column:", row.ticket_column)
-                    # print("- Value in my ticket:", my_ticket[row.ticket_column])
-                    output *= my_ticket[row.ticket_column]
-                    break
+        if "departure" not in field:
+            continue
+
+        for row in matrix:
+            if row.elements[idx]:
+                # print(field, ':')
+                # print("- Ticket column:", row.ticket_column)
+                # print("- Value in my ticket:", my_ticket[row.ticket_column])
+                output *= my_ticket[row.ticket_column]
+                break
 
     return output
 
