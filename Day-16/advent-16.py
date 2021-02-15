@@ -1,6 +1,18 @@
 """
 URL for challenge: https://adventofcode.com/2020/day/16
+
+Check PR description for notes on solution.
 """
+
+
+class Row(object):
+    """
+    Store the fit of all values in a specific
+    ticket column against each of the ticket fields
+    """
+    def __init__(self, elements, ticket_column):
+        self.elements = elements
+        self.ticket_column = ticket_column
 
 
 def process_input():
@@ -68,14 +80,101 @@ def is_ticket_valid(ticket, all_valid_vals):
         exit(1)
 
 
-
-
-
-
-
-
 def part2():
-    return
+    ticket_fields, my_ticket, nearby_tickets = process_input()
+    # Create a set that contains the union of
+    # the valid values for all of the fields
+    all_valid_vals = set()
+    for valid_range in ticket_fields.values():
+        all_valid_vals = all_valid_vals.union(valid_range)
+
+    # Determine valid tickets
+    valid_tickets = []
+    for ticket in nearby_tickets:
+        if is_ticket_valid(ticket, all_valid_vals)[0]:
+            valid_tickets.append(ticket)
+
+    matrix = []
+    num_fields = len(valid_tickets[0])
+    fields = list(ticket_fields.keys())
+
+    # Build a matrix where xth row represents fit
+    # of xth column (values from all valid tickets
+    # at that column) against each of the fields
+    for column_idx in range(num_fields):
+        column_values = {ticket[column_idx] for ticket in valid_tickets}
+        field_fits = []
+        for field in fields:
+            valid_range = ticket_fields[field]
+            if column_values.issubset(valid_range):
+                field_fits.append(1)
+            else:
+                field_fits.append(0)
+
+        matrix.append(Row(field_fits, column_idx))
+
+    # print_matrix(matrix, "Original matrix - ")
+
+    # Sort the matrix such that the rows with
+    # the least number of 1s appear at the top
+    matrix.sort(key=lambda x: sum(x.elements))
+    # print_matrix(matrix, "Sorted matrix - ")
+
+    for row_idx in range(len(matrix)):
+        simplify_row(matrix, row_idx)
+
+    # print_matrix(matrix, "After simplification - ")
+    output = 1
+    for idx, field in enumerate(fields):
+        if "departure" in field:
+            for row in matrix:
+                if row.elements[idx]:
+                    # print((field, row.ticket_column, my_ticket[row.ticket_column]))
+                    output *= my_ticket[row.ticket_column]
+                    break
+
+    return output
+
+
+def simplify_row(matrix, row_idx):
+    # Find the first non-zero entry in the
+    # target row. Store it's value and index.
+    target_row = matrix[row_idx].elements
+    non_zero, non_zero_idx = -1, -1
+    for idx, entry in enumerate(target_row):
+        if entry:
+            non_zero = entry
+            non_zero_idx = idx
+            break
+
+    # If there are no non-zero entries, no
+    # modifications have to be made to this row.
+    if non_zero_idx == -1:
+        return
+
+    # Make every entry above and
+    # below the leading 1 to be zero
+    tolerance = 0.0000001
+    for i, row_obj in enumerate(matrix):
+        row = row_obj.elements
+        if i == row_idx:
+            continue
+
+        coefficient = -1 * row[non_zero_idx] / non_zero
+        if not coefficient:
+            continue
+
+        for j, entry in enumerate(row):
+            new_value = row[j] + coefficient * target_row[j]
+            if abs(new_value) < tolerance:
+                row[j] = 0
+            else:
+                row[j] = new_value
+
+    # Divide each entry by the leading entry
+    # so that the leading entry becomes 1.
+    if non_zero != 1:
+        matrix[row_idx].elements = [entry*(1/non_zero) for entry in target_row]
 
 
 def run():
@@ -87,6 +186,16 @@ def run():
     else:
         print("You need to enter either 1 or 2")
         exit(1)
+
+
+def print_matrix(matrix, message):
+    print(message)
+
+    for row in matrix:
+        elements = [int(x) for x in row.elements]
+        print(elements, "Sum:", sum(elements), "\t", "Ticket column:", row.ticket_column)
+
+    print()
 
 
 run()
