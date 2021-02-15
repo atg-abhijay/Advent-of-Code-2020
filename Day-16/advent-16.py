@@ -69,15 +69,10 @@ def part1():
 
 def is_ticket_valid(ticket, all_valid_vals):
     invalid_vals = set(ticket).difference(all_valid_vals)
-    if not invalid_vals:
-        return True, 0
+    if invalid_vals:
+        return False, sum(invalid_vals)
 
-    elif len(invalid_vals) == 1:
-        return False, invalid_vals.pop()
-
-    else:
-        print("More than one invalid value!")
-        exit(1)
+    return True, 0
 
 
 def part2():
@@ -129,7 +124,9 @@ def part2():
         if "departure" in field:
             for row in matrix:
                 if row.elements[idx]:
-                    # print((field, row.ticket_column, my_ticket[row.ticket_column]))
+                    # print(field, ':')
+                    # print("- Ticket column:", row.ticket_column)
+                    # print("- Value in my ticket:", my_ticket[row.ticket_column])
                     output *= my_ticket[row.ticket_column]
                     break
 
