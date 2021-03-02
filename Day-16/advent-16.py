@@ -4,8 +4,8 @@ URL for challenge: https://adventofcode.com/2020/day/16
 Check PR description for notes on solution.
 """
 
-from networkx import DiGraph
-from networkx.algorithms.flow import maximum_flow
+from networkx import Graph
+from networkx.algorithms.bipartite import maximum_matching
 
 
 def process_input():
@@ -74,31 +74,17 @@ def part2():
     valid_tickets = [t for t in nearby_tickets if is_ticket_valid(t, all_valid_vals)[0]]
     fields = list(ticket_fields.keys())
 
-    graph = DiGraph()
+    graph = Graph()
     for column_idx in range(len(valid_tickets[0])):
         column_values = {ticket[column_idx] for ticket in valid_tickets}
         for field in fields:
             if column_values.issubset(ticket_fields[field]):
                 graph.add_edge(field, column_idx)
 
-    for idx, field in enumerate(fields):
-        graph.add_edge('source', field, capacity=1)
-        graph.add_edge(idx, 'sink', capacity=1)
-
-    _, flow_dict = maximum_flow(graph, 'source', 'sink')
-    departures_dict = {}
-    for field, edges in flow_dict.items():
-        if not isinstance(field, str) or 'departure' not in field:
-            continue
-
-        for ticket_column, edge_exists in edges.items():
-            if edge_exists:
-                 departures_dict[field] = ticket_column
-                 break
-
     output = 1
-    for idx in departures_dict.values():
-        output *= my_ticket[idx]
+    for start_edge, end_edge in maximum_matching(graph).items():
+        if isinstance(start_edge, str) and "departure" in start_edge:
+            output *= my_ticket[end_edge]
 
     return output
 
