@@ -4,15 +4,8 @@ URL for challenge: https://adventofcode.com/2020/day/16
 Check PR description for notes on solution.
 """
 
-
-class Row(object):
-    """
-    Store the fit of all values in a specific
-    ticket column against each of the ticket fields
-    """
-    def __init__(self, elements, ticket_column):
-        self.elements = elements
-        self.ticket_column = ticket_column
+from networkx import DiGraph
+from networkx.algorithms.flow import maximum_flow
 
 
 def process_input():
@@ -79,89 +72,35 @@ def part2():
     # the valid values for all of the fields
     all_valid_vals = set.union(*ticket_fields.values())
     valid_tickets = [t for t in nearby_tickets if is_ticket_valid(t, all_valid_vals)[0]]
+    fields = list(ticket_fields.keys())
 
-    matrix, fields = [], list(ticket_fields.keys())
-
-    # Build a matrix where xth row represents fit
-    # of xth column (values from all valid tickets
-    # at that column) against each of the fields
+    graph = DiGraph()
     for column_idx in range(len(valid_tickets[0])):
         column_values = {ticket[column_idx] for ticket in valid_tickets}
-        field_fits = []
         for field in fields:
             if column_values.issubset(ticket_fields[field]):
-                field_fits.append(1)
-            else:
-                field_fits.append(0)
+                graph.add_edge(field, column_idx)
 
-        matrix.append(Row(field_fits, column_idx))
-
-    # print_matrix(matrix, "Original matrix - ")
-
-    # Sort the matrix such that the rows with
-    # the least number of 1s appear at the top
-    matrix.sort(key=lambda x: sum(x.elements))
-    # print_matrix(matrix, "Sorted matrix - ")
-
-    for row_idx in range(len(matrix)):
-        simplify_row(matrix, row_idx)
-
-    # print_matrix(matrix, "After simplification - ")
-    output = 1
     for idx, field in enumerate(fields):
-        if "departure" not in field:
+        graph.add_edge('source', field, capacity=1)
+        graph.add_edge(idx, 'sink', capacity=1)
+
+    _, flow_dict = maximum_flow(graph, 'source', 'sink')
+    departures_dict = {}
+    for field, edges in flow_dict.items():
+        if not isinstance(field, str) or 'departure' not in field:
             continue
 
-        for row in matrix:
-            if row.elements[idx]:
-                # print(field, ':')
-                # print("- Ticket column:", row.ticket_column)
-                # print("- Value in my ticket:", my_ticket[row.ticket_column])
-                output *= my_ticket[row.ticket_column]
-                break
+        for ticket_column, edge_exists in edges.items():
+            if edge_exists:
+                 departures_dict[field] = ticket_column
+                 break
+
+    output = 1
+    for idx in departures_dict.values():
+        output *= my_ticket[idx]
 
     return output
-
-
-def simplify_row(matrix, row_idx):
-    # Find the first non-zero entry in the
-    # target row. Store it's value and index.
-    target_row = matrix[row_idx].elements
-    non_zero, non_zero_idx = -1, -1
-    for idx, entry in enumerate(target_row):
-        if entry:
-            non_zero = entry
-            non_zero_idx = idx
-            break
-
-    # If there are no non-zero entries, no
-    # modifications have to be made to this row.
-    if non_zero_idx == -1:
-        return
-
-    # Make every entry above and
-    # below the leading 1 to be zero
-    tolerance = 0.0000001
-    for i, row_obj in enumerate(matrix):
-        row = row_obj.elements
-        if i == row_idx:
-            continue
-
-        coefficient = -1 * row[non_zero_idx] / non_zero
-        if not coefficient:
-            continue
-
-        for j, entry in enumerate(row):
-            new_value = row[j] + coefficient * target_row[j]
-            if abs(new_value) < tolerance:
-                row[j] = 0
-            else:
-                row[j] = new_value
-
-    # Divide each entry by the leading entry
-    # so that the leading entry becomes 1.
-    if non_zero != 1:
-        matrix[row_idx].elements = [entry*(1/non_zero) for entry in target_row]
 
 
 def run():
@@ -173,16 +112,6 @@ def run():
     else:
         print("You need to enter either 1 or 2")
         exit(1)
-
-
-def print_matrix(matrix, message):
-    print(message)
-
-    for row in matrix:
-        elements = [int(x) for x in row.elements]
-        print(elements, "Sum:", sum(elements), "\t", "Ticket column:", row.ticket_column)
-
-    print()
 
 
 run()
