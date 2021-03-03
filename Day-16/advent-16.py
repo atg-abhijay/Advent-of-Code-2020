@@ -4,7 +4,10 @@ URL for challenge: https://adventofcode.com/2020/day/16
 Check PR description for notes on solution.
 """
 
+import matplotlib.pyplot as plt
+from networkx import draw
 from networkx import Graph
+from networkx.drawing.layout import bipartite_layout
 from networkx.algorithms.bipartite import maximum_matching
 
 
@@ -82,9 +85,14 @@ def part2():
                 graph.add_edge(field, column_idx)
 
     output = 1
-    for start_edge, end_edge in maximum_matching(graph).items():
+    mm_edges = maximum_matching(graph).items()
+    for start_edge, end_edge in mm_edges:
         if isinstance(start_edge, str) and "departure" in start_edge:
             output *= my_ticket[end_edge]
+
+    # Uncomment the following to draw the graphs -
+    # draw_bipartite_graph(graph, fields)
+    # draw_bipartite_graph(Graph(mm_edges), fields)
 
     return output
 
@@ -98,6 +106,14 @@ def run():
     else:
         print("You need to enter either 1 or 2")
         exit(1)
+
+    plt.show()
+
+
+def draw_bipartite_graph(graph, first_partition_nodes):
+    plt.figure()
+    draw(graph, pos=bipartite_layout(graph, first_partition_nodes),
+         labels={node: node for node in graph.nodes}, node_size=600, node_color="green")
 
 
 run()
