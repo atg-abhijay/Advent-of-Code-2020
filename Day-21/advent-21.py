@@ -10,7 +10,7 @@ from networkx.algorithms import bipartite
 from networkx.drawing.layout import bipartite_layout
 
 
-def part1():
+def process_input():
     f = open("advent-21-input.txt")
     ingr_appearances, allergen_prospects = {}, {}
     for line in f.readlines():
@@ -30,11 +30,16 @@ def part1():
             else:
                 ingr_appearances[ingr] += 1
 
+    return ingr_appearances, allergen_prospects
+
+
+def part1():
+    ingr_appearances, allergen_prospects = process_input()
     ingredients = ingr_appearances.keys()
     allergens = allergen_prospects.keys()
 
     graph = Graph(allergen_prospects)
-    mm_graph = Graph(bipartite.maximum_matching(graph).items())
+    mm_graph = Graph(bipartite.maximum_matching(graph))
     ingr_without_allergens = ingredients - (set(mm_graph) - allergens)
 
     # Uncomment the following to draw the graphs -
