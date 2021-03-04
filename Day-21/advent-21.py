@@ -1,12 +1,14 @@
 """
 URL for challenge: https://adventofcode.com/2020/day/21
+
+Check PR description for working of solution.
 """
 
 
 import matplotlib.pyplot as plt
 from networkx import draw
 from networkx import Graph
-from networkx.algorithms import bipartite
+from networkx.algorithms.bipartite import maximum_matching
 from networkx.drawing.layout import bipartite_layout
 
 
@@ -36,28 +38,18 @@ def process_input():
 
 def part1():
     ingr_appearances, allergen_prospects = process_input()
-    ingredients = ingr_appearances.keys()
-    allergens = allergen_prospects.keys()
-
-    graph = Graph(allergen_prospects)
-    mm_graph = Graph(bipartite.maximum_matching(graph))
-    ingr_without_allergens = ingredients - (set(mm_graph) - allergens)
-
-    # Uncomment the following to draw the graphs -
-    # draw_bipartite_graph(graph, allergens)
-    # draw_bipartite_graph(mm_graph, allergens)
+    mm_edges = maximum_matching(Graph(allergen_prospects))
+    ingr_without_allergens = ingr_appearances.keys() - (mm_edges.keys() - allergen_prospects.keys())
 
     return sum([ingr_appearances[ingr] for ingr in ingr_without_allergens])
 
 
 def part2():
     _, allergen_prospects = process_input()
-    allergens = allergen_prospects.keys()
-    mm_edges = bipartite.maximum_matching(Graph(allergen_prospects))
-    mm_ingredients = sorted([mm_edges[allergen]
-                             for allergen in allergens], key=lambda x: mm_edges[x])
+    mm_edges = maximum_matching(Graph(allergen_prospects))
+    ingr_with_allergens = [mm_edges[allergen] for allergen in allergen_prospects]
 
-    return ','.join(mm_ingredients)
+    return ','.join(sorted(ingr_with_allergens, key=lambda x: mm_edges[x]))
 
 
 def run():
