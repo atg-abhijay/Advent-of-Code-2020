@@ -22,7 +22,8 @@ def process_input():
             if allrg not in allergen_prospects:
                 allergen_prospects[allrg] = ingredients
             else:
-                allergen_prospects[allrg] = allergen_prospects[allrg].intersection(ingredients)
+                allergen_prospects[allrg] = allergen_prospects[allrg].intersection(
+                    ingredients)
 
         for ingr in ingredients:
             if ingr not in ingr_appearances:
@@ -50,7 +51,13 @@ def part1():
 
 
 def part2():
-    return
+    _, allergen_prospects = process_input()
+    allergens = allergen_prospects.keys()
+    mm_edges = bipartite.maximum_matching(Graph(allergen_prospects))
+    mm_ingredients = sorted([mm_edges[allergen]
+                             for allergen in allergens], key=lambda x: mm_edges[x])
+
+    return ','.join(mm_ingredients)
 
 
 def run():
