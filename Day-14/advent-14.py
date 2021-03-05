@@ -1,5 +1,7 @@
 """
 URL for challenge: https://adventofcode.com/2020/day/14
+
+Check PR description for notes on solution.
 """
 
 
@@ -19,16 +21,13 @@ def process_input():
 
 def part1():
     instructions = process_input()
-    mask_with_zeroes, mask_with_ones = 0, 0
     addresses = {}
     for instr in instructions:
-        command = instr[0]
-        if command == "mask":
+        if instr[0] == "mask":
             mask_with_zeroes = int(instr[1].replace('X', '0'), 2)
             mask_with_ones = int(instr[1].replace('X', '1'), 2)
         else:
-            value = instr[2]
-            addresses[instr[1]] = (value | mask_with_zeroes) & mask_with_ones
+            addresses[instr[1]] = (instr[2] | mask_with_zeroes) & mask_with_ones
 
     return sum(addresses.values())
 
@@ -36,14 +35,14 @@ def part1():
 def part2():
     instructions = process_input()
     addresses, float_idxs = {}, []
+    num_bits = 36
     for instr in instructions:
-        command = instr[0]
-        if command == "mask":
+        if instr[0] == "mask":
             float_idxs = [i for i, ch in enumerate(instr[1]) if ch == 'X']
             num_floats = len(float_idxs)
             mask_with_ones = int(instr[1].replace('X', '1'), 2)
         else:
-            floating_addr = list(bin(instr[1] | mask_with_ones)[2:].zfill(36))
+            floating_addr = list(bin(instr[1] | mask_with_ones)[2:].zfill(num_bits))
             for x in range(2 ** num_floats):
                 x = bin(x)[2:].zfill(num_floats)
                 for bit, idx in zip(x, float_idxs):
