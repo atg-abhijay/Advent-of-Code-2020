@@ -6,7 +6,7 @@ URL for challenge: https://adventofcode.com/2020/day/22
 from collections import deque
 
 
-def part1():
+def process_input():
     f = open("advent-22-input.txt")
     p1_cards, p2_cards = deque(), deque()
     idx, puzzle_input = 0, f.readlines()[1:]
@@ -20,6 +20,11 @@ def part1():
     for line in puzzle_input[idx+2:]:
         p2_cards.append(int(line.strip()))
 
+    return p1_cards, p2_cards
+
+
+def part1():
+    p1_cards, p2_cards = process_input()
     while p1_cards and p2_cards:
         p1_top, p2_top = p1_cards.popleft(), p2_cards.popleft()
         if p1_top > p2_top:
