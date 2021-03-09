@@ -4,6 +4,8 @@ URL for challenge: https://adventofcode.com/2020/day/22
 
 
 from collections import deque
+from copy import copy
+from itertools import islice
 
 
 def process_input():
@@ -42,7 +44,43 @@ def part1():
 
 
 def part2():
-    return
+    p1_cards, p2_cards = process_input()
+    winner = play_game(p1_cards, p2_cards)
+    winner_deck = p1_cards if winner == 1 else p2_cards
+    result, num_cards = 0, len(winner_deck)
+    for card in winner_deck:
+        result += card * num_cards
+        num_cards -= 1
+
+    return result
+
+
+def play_game(p1_cards, p2_cards):
+    previous_configs = set()
+    while p1_cards and p2_cards:
+        current_config = (tuple(p1_cards), tuple(p2_cards))
+        if current_config in previous_configs:
+            return 1
+
+        previous_configs.add(current_config)
+        p1_top, p2_top = p1_cards.popleft(), p2_cards.popleft()
+        if len(p1_cards) >= p1_top and len(p2_cards) >= p2_top:
+            subgame_p1_cards = copy(deque(islice(p1_cards, p1_top)))
+            subgame_p2_cards = copy(deque(islice(p2_cards, p2_top)))
+            winner = play_game(subgame_p1_cards, subgame_p2_cards)
+            if winner == 1:
+                p1_cards.extend([p1_top, p2_top])
+            else:
+                p2_cards.extend([p2_top, p1_top])
+        else:
+            if p1_top > p2_top:
+                p1_cards.extend([p1_top, p2_top])
+                winner = 1
+            else:
+                p2_cards.extend([p2_top, p1_top])
+                winner = 2
+
+    return winner
 
 
 def run():
