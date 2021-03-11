@@ -6,9 +6,13 @@ URL for challenge: https://adventofcode.com/2020/day/23
 from networkx import add_cycle, add_path, DiGraph
 
 
-def part1():
+def process_input():
     f = open("advent-23-input.txt")
-    cups = [int(x) for x in f.readline()]
+    return [int(x) for x in f.readline()]
+
+
+def part1():
+    cups = process_input()
     current_cup, num_moves = cups[0], 100
     lowest_cup, highest_cup = min(cups), max(cups)
 
