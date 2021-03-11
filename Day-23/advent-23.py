@@ -4,6 +4,7 @@ URL for challenge: https://adventofcode.com/2020/day/23
 
 
 from networkx import add_cycle, add_path, DiGraph
+from tqdm import tqdm
 
 
 def process_input():
@@ -13,17 +14,7 @@ def process_input():
 
 def part1():
     cups = process_input()
-    current_cup, num_moves = cups[0], 100
-    lowest_cup, highest_cup = min(cups), max(cups)
-
-    circle = DiGraph()
-    add_cycle(circle, cups)
-
-    for _ in range(num_moves):
-        neighbours = pick_up_cups(circle, current_cup)
-        destn_cup = find_destination_cup(circle, current_cup, lowest_cup, highest_cup)
-        insert_cups(circle, destn_cup, neighbours)
-        current_cup = next(circle.successors(current_cup))
+    circle = play_game(cups, 100, cups[0], min(cups), max(cups))
 
     cup, result_cups = next(circle.successors(1)), []
     while cup != 1:
@@ -35,6 +26,19 @@ def part1():
 
 def part2():
     return
+
+
+def play_game(cups, num_moves, current_cup, lowest_cup, highest_cup):
+    circle = DiGraph()
+    add_cycle(circle, cups)
+
+    for _ in tqdm(range(num_moves)):
+        neighbours = pick_up_cups(circle, current_cup)
+        destn_cup = find_destination_cup(circle, current_cup, lowest_cup, highest_cup)
+        place_cups(circle, destn_cup, neighbours)
+        current_cup = next(circle.successors(current_cup))
+
+    return circle
 
 
 def pick_up_cups(circle, current_cup):
@@ -51,8 +55,7 @@ def pick_up_cups(circle, current_cup):
     return neighbours
 
 
-def find_destination_cup(circle, *different_cups):
-    current_cup, lowest_cup, highest_cup = different_cups
+def find_destination_cup(circle, current_cup, lowest_cup, highest_cup):
     destination_cup = current_cup - 1
     while 1:
         if destination_cup in circle:
@@ -63,7 +66,7 @@ def find_destination_cup(circle, *different_cups):
             destination_cup = highest_cup
 
 
-def insert_cups(circle, destination_cup, neighbours):
+def place_cups(circle, destination_cup, neighbours):
     current_nb = next(circle.successors(destination_cup))
     add_path(circle, neighbours)
     circle.remove_edge(destination_cup, current_nb)
