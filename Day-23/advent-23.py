@@ -3,6 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/23
 """
 
 
+from itertools import chain
 from networkx import add_cycle, add_path, DiGraph
 from tqdm import tqdm
 
@@ -25,7 +26,14 @@ def part1():
 
 
 def part2():
-    return
+    # Note: Takes about 5 minutes to run
+    input_cups = process_input()
+    cups = chain(input_cups, (x for x in range(max(input_cups)+1, 1_000_001)))
+
+    circle = play_game(cups, 10_000_000, input_cups[0], min(input_cups), 1_000_000)
+    first_num = next(circle.successors(1))
+
+    return first_num * next(circle.successors(first_num))
 
 
 def play_game(cups, num_moves, current_cup, lowest_cup, highest_cup):
