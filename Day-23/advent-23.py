@@ -1,72 +1,89 @@
 """
 URL for challenge: https://adventofcode.com/2020/day/23
+
+Check PR description for some brief notes.
 """
 
 
-from itertools import chain
-from networkx import add_cycle, add_path, DiGraph
 from tqdm import tqdm
 
 
 def process_input():
     f = open("advent-23-input.txt")
-    return [int(x) for x in f.readline()]
+    input_cups = [int(x) for x in f.readline()]
+    highest_cup = len(input_cups)
+    # 1. Let element at index 0 be a dummy value so that cup labels and
+    #    indices match up. At the beginning, all neighbours are set to -1.
+    # 2. neighbours[cup] = clockwise cup neighbour
+    neighbours = [-1 for x in range(highest_cup+1)]
+    for idx, cup in enumerate(input_cups[:-1]):
+        neighbours[cup] = input_cups[idx+1]
+
+    neighbours[input_cups[-1]] = input_cups[0]
+
+    return neighbours, input_cups, highest_cup
 
 
 def part1():
-    cups = process_input()
-    circle = play_game(cups, 100, cups[0], min(cups), max(cups))
+    neighbours, input_cups, highest_cup = process_input()
+    play_game(neighbours, 100, input_cups[0], highest_cup)
 
-    cup, result_cups = next(circle.successors(1)), []
+    cup, result_cups = neighbours[1], []
     while cup != 1:
         result_cups.append(str(cup))
-        cup = next(circle.successors(cup))
+        cup = neighbours[cup]
 
     return ''.join(result_cups)
 
 
 def part2():
-    # Note: Takes about 5 minutes to run
-    input_cups = process_input()
-    cups = chain(input_cups, (x for x in range(max(input_cups)+1, 1_000_001)))
+    # Note: Takes about 25 seconds to run
+    # 1. Last cup from puzzle input will connect to first cup from increasing list.
+    # 2. From increasing list, cup x will connect to cup (x+1).
+    # 3. Last cup from increasing list (1 millionth cup) will connect to very first cup.
+    neighbours, input_cups, current_max = process_input()
+    neighbours[input_cups[-1]] = current_max+1
+    neighbours.extend([x+1 for x in range(current_max+1, 1_000_001)])
+    neighbours[-1] = input_cups[0]
 
-    circle = play_game(cups, 10_000_000, input_cups[0], min(input_cups), 1_000_000)
-    first_num = next(circle.successors(1))
+    play_game(neighbours, 10_000_000, input_cups[0], 1_000_000)
+    first_num = neighbours[1]
 
-    return first_num * next(circle.successors(first_num))
+    return first_num * neighbours[first_num]
 
 
-def play_game(cups, num_moves, current_cup, lowest_cup, highest_cup):
-    circle = DiGraph()
-    add_cycle(circle, cups)
-
+def play_game(neighbours, num_moves, current_cup, highest_cup):
     for _ in tqdm(range(num_moves)):
-        neighbours = pick_up_cups(circle, current_cup)
-        destn_cup = find_destination_cup(circle, current_cup, lowest_cup, highest_cup)
-        place_cups(circle, destn_cup, neighbours)
-        current_cup = next(circle.successors(current_cup))
-
-    return circle
+        target_cups = pick_up_cups(neighbours, current_cup)
+        destn_cup = find_destination_cup(neighbours, current_cup, highest_cup)
+        place_cups(neighbours, destn_cup, target_cups)
+        current_cup = neighbours[current_cup]
 
 
-def pick_up_cups(circle, current_cup):
+def pick_up_cups(neighbours, current_cup):
     starting_cup, num_pickups = current_cup, 3
-    neighbours = []
+    target_cups = []
     for _ in range(num_pickups):
-        neighbour = next(circle.successors(starting_cup))
-        neighbours.append(neighbour)
-        starting_cup = neighbour
+        target_cup = neighbours[starting_cup]
+        target_cups.append(target_cup)
+        starting_cup = target_cup
 
-    circle.add_edge(current_cup, next(circle.successors(starting_cup)))
-    circle.remove_nodes_from(neighbours)
+    neighbours[current_cup] = neighbours[target_cup]
+    # Set their neighbours to -1 so that they are completely disconnected
+    # from everything. Their internal order will still be maintained with
+    # the list target_cups.
+    for target_cup in target_cups:
+        neighbours[target_cup] = -1
 
-    return neighbours
+    return target_cups
 
 
-def find_destination_cup(circle, current_cup, lowest_cup, highest_cup):
+def find_destination_cup(neighbours, current_cup, highest_cup):
+    lowest_cup = 1
     destination_cup = current_cup - 1
     while 1:
-        if destination_cup in circle:
+        # Disconnected cups have '-1' neighbours
+        if neighbours[destination_cup] != -1:
             return destination_cup
 
         destination_cup -= 1
@@ -74,12 +91,13 @@ def find_destination_cup(circle, current_cup, lowest_cup, highest_cup):
             destination_cup = highest_cup
 
 
-def place_cups(circle, destination_cup, neighbours):
-    current_nb = next(circle.successors(destination_cup))
-    add_path(circle, neighbours)
-    circle.remove_edge(destination_cup, current_nb)
-    circle.add_edge(destination_cup, neighbours[0])
-    circle.add_edge(neighbours[-1], current_nb)
+def place_cups(neighbours, destination_cup, target_cups):
+    current_nb = neighbours[destination_cup]
+    for target_cup in target_cups:
+        neighbours[destination_cup] = target_cup
+        destination_cup = target_cup
+
+    neighbours[destination_cup] = current_nb
 
 
 def run():
