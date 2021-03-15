@@ -25,7 +25,35 @@ def process_input():
 
 
 def part1():
-    return
+    all_directions = process_input()
+    tiles = {(0, 0): 0}
+    for directions in all_directions:
+        current_x, current_y = 0, 0
+        for step in directions:
+            if step == 'e':
+                current_x += 2
+            elif step == 'w':
+                current_x -= 2
+            elif step == 'se':
+                current_x += 1
+                current_y -= 1
+            elif step == 'sw':
+                current_x -= 1
+                current_y -= 1
+            elif step == 'ne':
+                current_x += 1
+                current_y += 1
+            else:
+                current_x -= 1
+                current_y += 1
+
+        location = (current_x, current_y)
+        if location not in tiles:
+            tiles[location] = 1
+        else:
+            tiles[location] = 1 - tiles[location]
+
+    return sum(tiles.values())
 
 
 def part2():
