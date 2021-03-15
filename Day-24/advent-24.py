@@ -3,6 +3,9 @@ URL for challenge: https://adventofcode.com/2020/day/24
 """
 
 
+from tqdm import tqdm
+
+
 def process_input():
     f = open("advent-24-input.txt")
     all_directions = []
@@ -25,6 +28,34 @@ def process_input():
 
 
 def part1():
+    return sum(map_out_floor().values())
+
+
+def part2():
+    # Takes about 10 seconds to run
+    tiles = map_out_floor()
+    tiles_to_flip, num_days = [], 100
+    for _ in tqdm(range(num_days)):
+        tiles = expand_floor(tiles)
+        for tile, color in tiles.items():
+            num_black_nbs = check_neighbours(tiles, tile)
+            # Black
+            if color == 1:
+                if num_black_nbs == 0 or num_black_nbs > 2:
+                    tiles_to_flip.append(tile)
+            # White
+            else:
+                if num_black_nbs == 2:
+                    tiles_to_flip.append(tile)
+
+        while tiles_to_flip:
+            tile = tiles_to_flip.pop()
+            tiles[tile] = 1 - tiles[tile]
+
+    return sum(tiles.values())
+
+
+def map_out_floor():
     all_directions = process_input()
     tiles = {(0, 0): 0}
     for directions in all_directions:
@@ -53,11 +84,36 @@ def part1():
         else:
             tiles[location] = 1 - tiles[location]
 
-    return sum(tiles.values())
+    return tiles
 
 
-def part2():
-    return
+def generate_neighbour_locations(target_tile):
+    tile_x, tile_y = target_tile
+    neigbhour_locations = [(tile_x + x, tile_y + y)
+                                for x in [-1, 1] for y in [-1, 1]]
+    neigbhour_locations.extend([(tile_x + x, tile_y) for x in [-2, 2]])
+    return neigbhour_locations
+
+
+def expand_floor(tiles):
+    tiles_copy = tiles.copy()
+    for tile in tiles:
+        neighbour_locations = generate_neighbour_locations(tile)
+        for nb in neighbour_locations:
+            if nb not in tiles_copy:
+                tiles_copy[nb] = 0
+
+    return tiles_copy
+
+
+def check_neighbours(tiles, target_tile):
+    num_black_nbs = 0
+    neighbour_locations = generate_neighbour_locations(target_tile)
+    for nb in neighbour_locations:
+        if nb in tiles:
+            num_black_nbs += tiles[nb]
+
+    return num_black_nbs
 
 
 def run():
