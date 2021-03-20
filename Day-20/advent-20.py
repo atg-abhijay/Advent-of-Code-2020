@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms import maximum_flow
 from networkx.drawing import multipartite_layout
+from tqdm import tqdm
 
 
 def process_input():
@@ -52,44 +53,40 @@ def part1():
     tiles = process_input()
     flow_network = nx.DiGraph(
         [(tile_id, 'sink', {'capacity': 4}) for tile_id in tiles])
-    all_pairs = list(permutations(tiles.keys(), 2))
-    flow_network.add_edges_from(
-        [('source', pair, {'capacity': 1}) for pair in all_pairs])
 
-    for pair in all_pairs:
-        u, v = pair
+    flow_network.add_node('source', layer=0)
+    flow_network.nodes['sink']['layer'] = 5
+    for tile_id in tiles:
+        flow_network.nodes[tile_id]['layer'] = 4
+
+    for u, v in tqdm(permutations(tiles.keys(), 2)):
+        is_connection = False
         for u_pos, u_border in tiles[u].items():
             for v_pos, v_border in tiles[v].items():
-                u_label, v_label = f'{pair}_{u_pos}', f'{v}_{v_pos}'
+                u_label, v_label = f'({u}, {v})_{u_pos}', f'{v}_{v_pos}'
                 if u_border ^ v_border == 0:
-                    flow_network.add_edge(pair, u_label)
-                    flow_network.add_edge(u_label, v_label)
+                    is_connection = True
+                    flow_network.add_edges_from(
+                        [((u, v), u_label), (u_label, v_label)])
                     flow_network.nodes[u_label]['layer'] = 2
 
                 flow_network.add_edge(v_label, v, capacity=1)
                 flow_network.nodes[v_label]['layer'] = 3
 
-    ### Add layer attribute ###
-    flow_network.nodes['source']['layer'] = 0
-    for pair in all_pairs:
-        flow_network.nodes[pair]['layer'] = 1
-
-    for tile_id in tiles:
-        flow_network.nodes[tile_id]['layer'] = 4
-
-    flow_network.nodes['sink']['layer'] = 5
-    ###########################
+        if is_connection:
+            flow_network.add_edge('source', (u, v), capacity=1)
+            flow_network.nodes[(u, v)]['layer'] = 1
 
     _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
+
+    # Draw the flow network with capacities and flow amounts
+    # draw_flow_network(flow_network, "Capacities")
+    # draw_flow_network(flow_network, "Flow amounts", flow_dict)
+
     result = 1
     for tile_id, flow in flow_dict.items():
         if 'sink' in flow and flow['sink'] == 2:
             result *= tile_id
-
-    # Draw the flow network with capacities
-    # and flow amounts respectively
-    # draw_flow_network(flow_network)
-    # draw_flow_network(flow_network, flow_dict)
 
     return result
 
@@ -111,11 +108,12 @@ def run():
     plt.show()
 
 
-def draw_flow_network(graph, flow_dict=None):
-    plt.figure()
+def draw_flow_network(graph, title, flow_dict=None):
+    plt.figure(num=title)
     positions = multipartite_layout(graph, subset_key='layer')
     nx.draw(graph, pos=positions, labels={
             node: node for node in graph.nodes}, node_size=600, node_color="green")
+
     # Draw with flow amounts
     if flow_dict:
         tuple_flows = {}
