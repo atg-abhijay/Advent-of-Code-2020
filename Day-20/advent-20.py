@@ -3,7 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/20
 """
 
 
-from itertools import permutations
+from itertools import combinations
 import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms import maximum_flow
@@ -59,22 +59,24 @@ def part1():
     for tile_id in tiles:
         flow_network.nodes[tile_id]['layer'] = 4
 
-    for u, v in tqdm(permutations(tiles.keys(), 2)):
+    for u, v in tqdm(combinations(tiles.keys(), 2)):
         is_connection = False
         for u_pos, u_border in tiles[u].items():
             for v_pos, v_border in tiles[v].items():
-                u_label, v_label = f'({u}, {v})_{u_pos}', f'{v}_{v_pos}'
+                u_label, v_label = f'{u}_{u_pos}', f'{v}_{v_pos}'
+                uv_label = '_'.join([u_label, v_label])
                 if u_border ^ v_border == 0:
                     is_connection = True
                     flow_network.add_edges_from(
-                        [((u, v), u_label), (u_label, v_label)])
-                    flow_network.nodes[u_label]['layer'] = 2
+                        [((u, v), uv_label), (uv_label, u_label), (uv_label, v_label)])
+                    flow_network.nodes[uv_label]['layer'] = 2
 
-                flow_network.add_edge(v_label, v, capacity=1)
+                flow_network.add_edges_from([(u_label, u), (v_label, v)], capacity=1)
+                flow_network.nodes[u_label]['layer'] = 3
                 flow_network.nodes[v_label]['layer'] = 3
 
         if is_connection:
-            flow_network.add_edge('source', (u, v), capacity=1)
+            flow_network.add_edge('source', (u, v), capacity=2)
             flow_network.nodes[(u, v)]['layer'] = 1
 
     _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
@@ -82,6 +84,9 @@ def part1():
     # Draw the flow network with capacities and flow amounts
     # draw_flow_network(flow_network, "Capacities")
     # draw_flow_network(flow_network, "Flow amounts", flow_dict)
+
+    # print(flow_network.in_degree(nbunch=[
+    #       node for node, data in flow_network.nodes(data=True) if data['layer'] == 3]))
 
     result = 1
     for tile_id, flow in flow_dict.items():
