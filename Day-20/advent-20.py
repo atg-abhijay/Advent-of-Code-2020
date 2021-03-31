@@ -7,12 +7,13 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms import maximum_flow
+from networkx.algorithms.flow import preflow_push
 from networkx.drawing import multipartite_layout
 from tqdm import tqdm
 
 
 def process_input():
-    f = open("advent-20-input.txt")
+    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/advent-20-input.txt")
     tiles, current_tile_id = {}, 0
 
     for line in f.readlines():
@@ -23,11 +24,12 @@ def process_input():
         elif line:
             image.append(line.replace('.', '0').replace('#', '1'))
         else:
-            tiles[current_tile_id] = image
+            tiles[current_tile_id] = {"image": image}
 
-    tiles[current_tile_id] = image
+    tiles[current_tile_id] = {"image": image}
 
-    for tile_id, image in tiles.items():
+    for tile_id, image_dict in tiles.items():
+        image = image_dict["image"]
         borders = {"top": int(image[0], 2)}
         left_border, right_border = [], []
         for row in image:
@@ -44,12 +46,12 @@ def process_input():
         borders["left_rev"] = int(''.join(reversed(left_border)), 2)
         borders["bottom_rev"] = int(image[-1][::-1], 2)
 
-        tiles[tile_id] = borders
+        tiles[tile_id]["borders"] = borders
 
     return tiles
 
 
-def part1():
+def build_flow_network():
     tiles = process_input()
     flow_network = nx.DiGraph(
         [(tile_id, 'sink', {'capacity': 4}) for tile_id in tiles])
@@ -61,8 +63,8 @@ def part1():
 
     for u, v in tqdm(combinations(tiles.keys(), 2)):
         is_connection = False
-        for u_pos, u_border in tiles[u].items():
-            for v_pos, v_border in tiles[v].items():
+        for u_pos, u_border in tiles[u]["borders"].items():
+            for v_pos, v_border in tiles[v]["borders"].items():
                 u_label, v_label = f'{u}_{u_pos}', f'{v}_{v_pos}'
                 uv_label = '_'.join([u_label, v_label])
                 if u_border ^ v_border == 0:
@@ -79,14 +81,29 @@ def part1():
             flow_network.add_edge('source', (u, v), capacity=2)
             flow_network.nodes[(u, v)]['layer'] = 1
 
+    return flow_network
+
+
+def part1():
+    flow_network = build_flow_network()
+    residual_graph = preflow_push(flow_network, 'source', 'sink')
     _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
 
     # Draw the flow network with capacities and flow amounts
     # draw_flow_network(flow_network, "Capacities")
+    # draw_flow_network(residual_graph, "Residual Graph")
     # draw_flow_network(flow_network, "Flow amounts", flow_dict)
 
-    # print(flow_network.in_degree(nbunch=[
-    #       node for node, data in flow_network.nodes(data=True) if data['layer'] == 3]))
+    # layer_nodes = [node for node, data in flow_network.nodes(data=True) if data['layer'] == 1]
+    # in_degrees = set()
+    # print("#Nodes in layer:", len(layer_nodes))
+    # for _, value in flow_network.in_degree(nbunch=layer_nodes):
+    #     in_degrees.add(value)
+
+    # print(in_degrees)
+
+    # print("#Nodes:", flow_network.number_of_nodes())
+    # print("#Edges:", flow_network.number_of_edges())
 
     result = 1
     for tile_id, flow in flow_dict.items():
@@ -97,11 +114,86 @@ def part1():
 
 
 def part2():
+    flow_network = build_flow_network()
+    _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
+    # R = preflow_push(flow_network, 'source', 'sink')
+    for tile in flow_network.predecessors('sink'):
+        if flow_dict[tile]['sink'] == 2:
+            corner_tile = tile
+            break
+
+    tile_neighbours = {}
+    queue = [corner_tile]
+    while queue:
+        tile = queue.pop()
+        if tile in tile_neighbours:
+            continue
+
+        tile_neighbours[tile] = []
+        for side in flow_network.predecessors(tile):
+            if flow_dict[side][tile] == 1:
+                uv_config = next(flow_network.predecessors(side))
+                for v in flow_network.successors(uv_config):
+                    if v != side:
+                        tile_neighbours[tile].append((side, v))
+                        queue.append(int(v.split('_')[0]))
+
+    # print(tile_neighbours)
+    remove_image_borders()
+
+    # queue = tile_neighbours[corner_tile]
+    # full_image = [[]]
+
+    # while queue:
+    #     start_tile, end_tile = queue.pop()
+    #     start_tile_id = int(start_tile.split('_')[0])
+    #     full_image[-1].append(start_tile_id)
+    #     end_tile_id, end_tile_dirn = end_tile.split('_', 1)
+    #     end_tile_id = int(end_tile_id)
+    #     full_image[-1].append(end_tile_id)
+
+    #     end_tile_nbrs = tile_neighbours[end_tile_id]
+    #     while 1:
+    #         if "top" in end_tile_dirn:
+
+
+
+
+    # while queue:
+    #     tile = queue.pop()
+    #     full_image.append([tile])
+    #     tile_nbrs = tile_neighbours[tile]
+    #     while tile_nbrs:
+    #         start_tile, end_tile = tile_nbrs.pop()
+    #         nbr, nbr_side = end_tile.split('_', 1)
+    #         nbr = int(nbr)
+    #         full_image[-1].append(nbr)
+    #         temp = [nbr]
+    #         while temp:
+
+
+
+
+
+
+    return
+
+
+def remove_image_borders():
+    tiles = process_input()
+    for values_dict in tiles.values():
+        image = values_dict["image"]
+        image.pop(0)
+        image.pop()
+        for idx, row in enumerate(image):
+            image[idx] = row[1:-1]
+
     return
 
 
 def run():
-    chall = int(input("Please enter either 1 or 2 for the challenges: "))
+    # chall = int(input("Please enter either 1 or 2 for the challenges: "))
+    chall = 2
     if chall == 1:
         print(part1())
     elif chall == 2:
@@ -116,8 +208,8 @@ def run():
 def draw_flow_network(graph, title, flow_dict=None):
     plt.figure(num=title)
     positions = multipartite_layout(graph, subset_key='layer')
-    nx.draw(graph, pos=positions, labels={
-            node: node for node in graph.nodes}, node_size=600, node_color="green")
+    nx.draw(graph, pos=positions, node_color="green", node_size=600,
+            labels={node: node for node in graph})
 
     # Draw with flow amounts
     if flow_dict:
