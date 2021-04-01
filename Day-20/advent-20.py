@@ -4,11 +4,13 @@ URL for challenge: https://adventofcode.com/2020/day/20
 
 
 from itertools import combinations
+from itertools import chain
+from itertools import tee
 import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms import maximum_flow
-from networkx.algorithms.flow import preflow_push
 from networkx.drawing import multipartite_layout
+import numpy as np
 from tqdm import tqdm
 
 
@@ -23,7 +25,7 @@ def process_input():
             current_tile_id = int(line.split("Tile ")[1][:-1])
             image = []
         elif line:
-            image.append(line.replace('.', '0').replace('#', '1'))
+            image.append(list(line.replace('.', '0').replace('#', '1')))
         else:
             tiles[current_tile_id] = {"image": image}
 
@@ -31,7 +33,7 @@ def process_input():
 
     for tile_id, image_dict in tiles.items():
         image = image_dict["image"]
-        borders = {"top": int(image[0], 2)}
+        borders = {"top": int(''.join(image[0]), 2)}
         left_border, right_border = [], []
         for row in image:
             right_border.append(row[-1])
@@ -39,13 +41,13 @@ def process_input():
 
         borders["right"] = int(''.join(right_border), 2)
         borders["left"] = int(''.join(left_border), 2)
-        borders["bottom"] = int(image[-1], 2)
+        borders["bottom"] = int(''.join(image[-1]), 2)
 
         # Append reverse versions of borders
-        borders["top_rev"] = int(image[0][::-1], 2)
+        borders["top_rev"] = int(''.join(image[0][::-1]), 2)
         borders["right_rev"] = int(''.join(reversed(right_border)), 2)
         borders["left_rev"] = int(''.join(reversed(left_border)), 2)
-        borders["bottom_rev"] = int(image[-1][::-1], 2)
+        borders["bottom_rev"] = int(''.join(image[-1][::-1]), 2)
 
         tiles[tile_id]["borders"] = borders
 
@@ -125,13 +127,22 @@ def part2():
             corner_tile = tile
             break
 
-    tile_conns = generate_tile_connections(flow_network, flow_dict, corner_tile)
-    edges = dict(tile_conns.edges)
+    tile_conns = generate_tile_connections(
+        flow_network, flow_dict, corner_tile)
+    conns_copy = tile_conns.copy()
     image_layout = generate_image_layout(tile_conns, corner_tile)
     remove_image_borders(tiles)
-
+    full_image = generate_full_image(conns_copy, tiles, image_layout)
+    # print(edges)
+    # for e in conns_copy.edges(data=True):
+    #     print(e)
+    # for e in edges:
+    #     print(e)
     for row in image_layout:
         print(row)
+
+    # for row in full_image:
+    #     print(row)
 
     return
 
@@ -224,6 +235,42 @@ def remove_image_borders(tiles):
         image.pop(0)
         for idx, row in enumerate(image):
             image[idx] = row[1:-1]
+
+
+def generate_full_image(tile_conns, tiles, image_layout):
+    full_image = []
+    for row in image_layout:
+        image_row = []
+        first_itr, second_itr = tee(row)
+        next(second_itr)
+        for first_tile, second_tile in zip(first_itr, second_itr):
+            edge_ends = list(tile_conns[first_tile][second_tile].values())
+            tile_side = edge_ends[0] if str(first_tile) in edge_ends[0] else edge_ends[1]
+            image_row.append(rotate_tile(tiles[first_tile]["image"], tile_side))
+
+        tile_side = edge_ends[0] if str(second_tile) in edge_ends[0] else edge_ends[1]
+        image_row.append(np.fliplr(rotate_tile(tiles[second_tile]["image"], tile_side)).tolist())
+
+        for elements in zip(*image_row):
+            full_image.append(list(chain(*elements)))
+
+    return full_image
+
+
+def rotate_tile(tile_image, tile_side):
+    tile_side = tile_side.split('_', 1)[1]
+
+    if "top" in tile_side:
+        tile_image = np.rot90(tile_image, axes=(1, 0))
+    elif "left" in tile_side:
+        tile_image = np.fliplr(tile_image)
+    elif "bottom" in tile_side:
+        tile_image = np.transpose(tile_image)
+
+    if "rev" in tile_side:
+        tile_image = np.flipud(tile_image)
+
+    return tile_image.tolist()
 
 
 def run():
