@@ -13,7 +13,8 @@ from tqdm import tqdm
 
 
 def process_input():
-    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/advent-20-input.txt")
+    f = open(
+        "/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/advent-20-input.txt")
     tiles, current_tile_id = {}, 0
 
     for line in f.readlines():
@@ -51,8 +52,7 @@ def process_input():
     return tiles
 
 
-def build_flow_network():
-    tiles = process_input()
+def build_flow_network(tiles):
     flow_network = nx.DiGraph(
         [(tile_id, 'sink', {'capacity': 4}) for tile_id in tiles])
 
@@ -73,7 +73,8 @@ def build_flow_network():
                         [((u, v), uv_label), (uv_label, u_label), (uv_label, v_label)])
                     flow_network.nodes[uv_label]['layer'] = 2
 
-                flow_network.add_edges_from([(u_label, u), (v_label, v)], capacity=1)
+                flow_network.add_edges_from(
+                    [(u_label, u), (v_label, v)], capacity=1)
                 flow_network.nodes[u_label]['layer'] = 3
                 flow_network.nodes[v_label]['layer'] = 3
 
@@ -85,8 +86,8 @@ def build_flow_network():
 
 
 def part1():
-    flow_network = build_flow_network()
-    residual_graph = preflow_push(flow_network, 'source', 'sink')
+    tiles = process_input()
+    flow_network = build_flow_network(tiles)
     _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
 
     # print(flow_network.edges(data=True))
@@ -116,139 +117,107 @@ def part1():
 
 
 def part2():
-    flow_network = build_flow_network()
+    tiles = process_input()
+    flow_network = build_flow_network(tiles)
     _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
-    # R = preflow_push(flow_network, 'source', 'sink')
     for tile in flow_network.predecessors('sink'):
         if flow_dict[tile]['sink'] == 2:
             corner_tile = tile
             break
 
-    tile_nbrs = {}
-    queue = [corner_tile]
-    while queue:
-        tile = queue.pop()
-        if tile in tile_nbrs:
-            continue
+    tile_conns = generate_tile_connections(flow_network, flow_dict, corner_tile)
+    edges = dict(tile_conns.edges)
+    image_layout = generate_image_layout(tile_conns, corner_tile)
+    remove_image_borders(tiles)
 
-        tile_nbrs[tile] = {}
-        for side in flow_network.predecessors(tile):
-            if flow_dict[side][tile] == 1:
-                uv_config = next(flow_network.predecessors(side))
-                for v in flow_network.successors(uv_config):
-                    if v != side:
-                        tile_nbrs[tile][side.split('_', 1)[1]] = v
-                        queue.append(int(v.split('_')[0]))
-
-    # print(tile_nbrs)
-    remove_image_borders()
-
-    full_image = [[]]
-    queue = [corner_tile]
-    prev_dirn = ""
-    pairs = [("top", "bottom"), ("top_rev", "bottom_rev"),
-             ("right", "left"), ("right_rev", "left_rev")]
-    while queue:
-        tile = queue.pop()
-        full_image[-1].append(tile)
-
-        nbrs = tile_nbrs[tile]
-        if not prev_dirn:
-            _, nbr = nbrs.popitem()
-
-            if nbrs:
-                _, nbr2 = nbrs.popitem()
-                queue.append(int(nbr2.split('_', 1)[0]))
-
-            nbr_id, nbr_dirn = nbr.split('_', 1)
-            queue.append(int(nbr_id))
-            prev_dirn = nbr_dirn
-        else:
-            nbrs.pop(prev_dirn)
-            any_valid = False
-            for start, end in pairs:
-                if prev_dirn == start and end in nbrs:
-                    nbr_id, nbr_dirn = nbrs.pop(end).split('_', 1)
-                    queue.append(int(nbr_id))
-                    prev_dirn = nbr_dirn
-                    any_valid = True
-                elif prev_dirn == end and start in nbrs:
-                    nbr_id, nbr_dirn = nbrs.pop(start).split('_', 1)
-                    queue.append(int(nbr_id))
-                    prev_dirn = nbr_dirn
-                    any_valid = True
-
-            if not any_valid:
-                full_image.append([])
-                prev_dirn = ""
-
-
-
-            # if prev_dirn == "top" and "bottom" in nbrs:
-            #     pass
-            # elif prev_dirn == "bottom" and "top" in nbrs:
-            #     nbr_id, nbr_dirn = nbrs.pop("top").split('_', 1)
-            #     queue.append(int(nbr_id))
-            #     prev_dirn = nbr_dirn
-            # elif prev_dirn == "top_rev" and "bottom_rev" in nbrs:
-            #     pass
-            # elif prev_dirn == "bottom_rev" and "top_rev" in nbrs:
-            #     pass
-            # elif prev_dirn == "right" and "left" in nbrs:
-            #     pass
-            # elif prev_dirn == "left" and "right" in nbrs:
-            #     pass
-            # elif prev_dirn == "right_rev" and "left_rev" in nbrs:
-            #     pass
-            # elif prev_dirn == "left_rev" and "right_rev" in nbrs:
-            #     pass
-            # else:
-            #     full_image.append([])
-            #     prev_dirn = ""
-
-
-
-
-
-
-
-    # while queue:
-    #     nbrs = tile_nbrs[queue.pop()]
-    #     for dirn, nbr in nbrs.items():
-    #         nbr_id, nbr_dirn = nbr.split('_', 1)
-    #         nbr_id = int(nbr_id)
-
-    #         full_image[-1].append(nbr_id)
-            # while 1:
-                # if nbr_dirn == "top" and "bottom" in tile_nbrs[nbr_id].keys()
-
-
-
-
-    # while queue:
-    #     dirn, nbr = queue.pop()
-    #     nbr_id, nbr_dirn = nbr.split('_', 1)
-    #     image_row_queue = [int(nbr_id)]
-    #     while image_row_queue:
-    #         tile_id = image_row_queue.pop()
-    #         full_image[-1].append(tile_id)
-    #         value = ""
-
-    #         pairs = [("top", "bottom")]
-            # if "top" in nbr_dirn:
-            #     for key in tile_nbrs[tile_id]:
-            #         if "bottom" in key:
-            #             image_row_queue.append(tile_nbrs[tile_id][])
-
-            #     if "bottom" in tile_nbrs[tile_id]:
-            #         value =  tile_nbrs[tile_id][]
-
+    for row in image_layout:
+        print(row)
 
     return
 
 
-def remove_image_borders():
-    tiles = process_input()
+def generate_tile_connections(flow_network, flow_dict, corner_tile):
+    tile_conns = nx.Graph()
+    tile_conns.add_node(corner_tile, visited=False)
+    nodes = tile_conns.nodes
+    queue = [corner_tile]
+    while queue:
+        tile = queue.pop()
+        if 'visited' in nodes[tile] and nodes[tile]['visited']:
+            continue
+
+        for side in flow_network.predecessors(tile):
+            if flow_dict[side][tile] != 1:
+                continue
+
+            uv_config = next(flow_network.predecessors(side))
+            for v_tile_side in flow_network.successors(uv_config):
+                if v_tile_side == side:
+                    continue
+
+                v_tile_id = int(v_tile_side.split('_')[0])
+                tile_conns.add_edge(
+                    tile, v_tile_id, end_A=side, end_B=v_tile_side)
+                queue.append(v_tile_id)
+
+        nodes[tile]['visited'] = True
+
+    return tile_conns
+
+
+def generate_image_layout(tile_conns, corner_tile):
+    for tile in tile_conns:
+        tile_conns.nodes[tile]['weight'] = tile_conns.degree[tile]
+
+    queue, image_layout = [corner_tile], [[]]
+    counter, at_row_head = 0, True
+    width = len(tile_conns.nodes) ** 0.5
+    while queue:
+        tile = queue.pop()
+        image_layout[-1].append(tile)
+        counter += 1
+        # Reached the end of the row
+        if counter == width:
+            # Reached the end of the grid
+            if not tile_conns[tile]:
+                continue
+
+            nbr = next(tile_conns.neighbors(tile))
+            tile_conns.remove_edge(tile, nbr)
+            for node in [tile, nbr]:
+                tile_conns.nodes[node]['weight'] -= 5
+
+            image_layout.append([])
+            counter, at_row_head = 0, True
+            continue
+
+        next_in_row = min(tile_conns[tile],
+                          key=lambda x: tile_conns.nodes[x]['weight'])
+
+        if at_row_head:
+            if len(tile_conns[tile]) != 1:
+                next_row_head = set(tile_conns[tile]).difference(
+                    {next_in_row}).pop()
+                queue.append(next_row_head)
+                tile_conns.remove_edge(tile, next_row_head)
+                for node in [tile, next_row_head]:
+                    tile_conns.nodes[node]['weight'] -= 5
+
+            queue.append(next_in_row)
+            tile_conns.remove_edge(tile, next_in_row)
+            tile_conns.nodes[next_in_row]['weight'] -= 5
+            at_row_head = False
+
+        else:
+            queue.append(next_in_row)
+            for nbr in list(tile_conns[tile]):
+                tile_conns.nodes[nbr]['weight'] -= 5
+                tile_conns.remove_edge(tile, nbr)
+
+    return image_layout
+
+
+def remove_image_borders(tiles):
     for values_dict in tiles.values():
         image = values_dict["image"]
         image.pop()
