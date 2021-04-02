@@ -3,13 +3,9 @@ URL for challenge: https://adventofcode.com/2020/day/20
 """
 
 
-from itertools import combinations
-from itertools import chain
-from itertools import tee
+import itertools as it
 import matplotlib.pyplot as plt
 import networkx as nx
-from networkx.algorithms import maximum_flow
-from networkx.drawing import multipartite_layout
 import numpy as np
 from tqdm import tqdm
 
@@ -63,7 +59,7 @@ def build_flow_network(tiles):
     for tile_id in tiles:
         flow_network.nodes[tile_id]['layer'] = 4
 
-    for u, v in tqdm(combinations(tiles.keys(), 2)):
+    for u, v in tqdm(it.combinations(tiles.keys(), 2)):
         is_connection = False
         for u_pos, u_border in tiles[u]["borders"].items():
             for v_pos, v_border in tiles[v]["borders"].items():
@@ -90,7 +86,7 @@ def build_flow_network(tiles):
 def part1():
     tiles = process_input()
     flow_network = build_flow_network(tiles)
-    _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
+    _, flow_dict = nx.maximum_flow(flow_network, 'source', 'sink')
 
     # print(flow_network.edges(data=True))
 
@@ -121,7 +117,7 @@ def part1():
 def part2():
     tiles = process_input()
     flow_network = build_flow_network(tiles)
-    _, flow_dict = maximum_flow(flow_network, 'source', 'sink')
+    _, flow_dict = nx.maximum_flow(flow_network, 'source', 'sink')
     for tile in flow_network.predecessors('sink'):
         if flow_dict[tile]['sink'] == 2:
             corner_tile = tile
@@ -133,18 +129,47 @@ def part2():
     image_layout = generate_image_layout(tile_conns, corner_tile)
     remove_image_borders(tiles)
     full_image = generate_full_image(conns_copy, tiles, image_layout)
-    # print(edges)
-    # for e in conns_copy.edges(data=True):
-    #     print(e)
-    # for e in edges:
-    #     print(e)
-    for row in image_layout:
-        print(row)
+    sea_monster = process_sea_monster()
+    arrangements = [
+        sea_monster,
+        np.rot90(sea_monster),
+        np.rot90(sea_monster, k=2),
+        np.rot90(sea_monster, k=3),
+        np.flipud(sea_monster),
+        np.fliplr(sea_monster),
+        np.flipud(np.rot90(sea_monster)),
+        np.fliplr(np.rot90(sea_monster))
+    ]
+    corner_x, corner_y = 0, 0
+    image_height, image_width = len(full_image), len(full_image[0])
+    num_sea_monsters = 0
+    for idx, arrng in enumerate(arrangements):
+        height, width = len(arrng), len(arrng[0])
+        for corner_y in range(image_height):
+            for corner_x in range(image_width):
+                image_chunk = []
+                width_bound = corner_x + width < image_width + 1
+                height_bound = corner_y + height < image_height + 1
+                if width_bound and height_bound:
+                    for hgt in range(height):
+                        image_chunk.append(full_image[corner_y+hgt][corner_x:corner_x+width])
 
-    # for row in full_image:
-    #     print(row)
+                    bin_monster = int(''.join(it.chain(*arrng)), 2)
+                    bin_chunk = int(''.join(it.chain(*image_chunk)), 2)
 
-    return
+                    if bin_monster & bin_chunk == bin_monster:
+                        num_sea_monsters += 1
+
+        if num_sea_monsters:
+            break
+
+    total_roughness = sum([list(row).count('1') for row in full_image])
+    monster_roughness = sum([list(row).count('1') for row in sea_monster]) * num_sea_monsters
+
+    # for idx, row in enumerate(full_image):
+    #     print(''.join(row))
+
+    return total_roughness - monster_roughness
 
 
 def generate_tile_connections(flow_network, flow_dict, corner_tile):
@@ -241,7 +266,7 @@ def generate_full_image(tile_conns, tiles, image_layout):
     full_image = []
     for row in image_layout:
         image_row = []
-        first_itr, second_itr = tee(row)
+        first_itr, second_itr = it.tee(row)
         next(second_itr)
         for first_tile, second_tile in zip(first_itr, second_itr):
             edge_ends = list(tile_conns[first_tile][second_tile].values())
@@ -249,11 +274,14 @@ def generate_full_image(tile_conns, tiles, image_layout):
             image_row.append(rotate_tile(tiles[first_tile]["image"], tile_side))
 
         tile_side = edge_ends[0] if str(second_tile) in edge_ends[0] else edge_ends[1]
-        image_row.append(np.fliplr(rotate_tile(tiles[second_tile]["image"], tile_side)).tolist())
+        image_row.append(np.fliplr(rotate_tile(tiles[second_tile]["image"], tile_side)))
 
         for elements in zip(*image_row):
-            full_image.append(list(chain(*elements)))
+            full_image.append(list(it.chain(*elements)))
 
+    # num_rows = len(full_image)
+    # boundary = num_rows - 8 + 1
+    # full_image[boundary:] = np.flipud(full_image[boundary:])
     return full_image
 
 
@@ -270,7 +298,16 @@ def rotate_tile(tile_image, tile_side):
     if "rev" in tile_side:
         tile_image = np.flipud(tile_image)
 
-    return tile_image.tolist()
+    return tile_image
+
+
+def process_sea_monster():
+    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/sea-monster.txt")
+    sea_monster = []
+    for line in f.readlines():
+        sea_monster.append(list(line.strip('\n').replace(' ', '0').replace('#', '1')))
+
+    return sea_monster
 
 
 def run():
@@ -289,7 +326,7 @@ def run():
 
 def draw_flow_network(graph, title, flow_dict=None):
     plt.figure(num=title)
-    positions = multipartite_layout(graph, subset_key='layer')
+    positions = nx.multipartite_layout(graph, subset_key='layer')
     nx.draw(graph, pos=positions, node_color="green", node_size=600,
             labels={node: node for node in graph})
 
