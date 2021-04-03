@@ -15,6 +15,7 @@ def process_input():
         "/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/advent-20-input.txt")
     tiles, current_tile_id = {}, 0
 
+    # Parse images of the tiles
     for line in f.readlines():
         line = line.strip()
         if "Tile" in line:
@@ -27,23 +28,19 @@ def process_input():
 
     tiles[current_tile_id] = {"image": image}
 
+    # Determine borders of the tiles
     for tile_id, image_dict in tiles.items():
         image = image_dict["image"]
-        borders = {"top": int(''.join(image[0]), 2)}
-        left_border, right_border = [], []
-        for row in image:
-            right_border.append(row[-1])
-            left_border.append(row[0])
-
-        borders["right"] = int(''.join(right_border), 2)
-        borders["left"] = int(''.join(left_border), 2)
-        borders["bottom"] = int(''.join(image[-1]), 2)
+        borders = {
+            "top": ''.join(image[0]),
+            "right": ''.join([row[-1] for row in image]),
+            "bottom": ''.join(image[-1]),
+            "left": ''.join([row[0] for row in image])
+        }
 
         # Append reverse versions of borders
-        borders["top_rev"] = int(''.join(image[0][::-1]), 2)
-        borders["right_rev"] = int(''.join(reversed(right_border)), 2)
-        borders["left_rev"] = int(''.join(reversed(left_border)), 2)
-        borders["bottom_rev"] = int(''.join(image[-1][::-1]), 2)
+        for pos in ["top", "right", "left", "bottom"]:
+            borders[pos + "_rev"] = borders[pos][::-1]
 
         tiles[tile_id]["borders"] = borders
 
@@ -65,7 +62,7 @@ def build_flow_network(tiles):
             for v_pos, v_border in tiles[v]["borders"].items():
                 u_label, v_label = f'{u}_{u_pos}', f'{v}_{v_pos}'
                 uv_label = '_'.join([u_label, v_label])
-                if u_border ^ v_border == 0:
+                if u_border == v_border:
                     is_connection = True
                     flow_network.add_edges_from(
                         [((u, v), uv_label), (uv_label, u_label), (uv_label, v_label)])
