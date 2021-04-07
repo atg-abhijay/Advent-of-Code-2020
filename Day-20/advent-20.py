@@ -92,7 +92,19 @@ def part1():
     # draw_flow_network(residual_graph, "Residual Graph")
     # draw_flow_network(flow_network, "Flow amounts", flow_dict)
 
-    # layer_nodes = [node for node, data in flow_network.nodes(data=True) if data['layer'] == 1]
+    layer_nodes = [node for node, data in flow_network.nodes(
+        data=True) if data['layer'] == 4]
+
+    # for node in layer_nodes:
+    #     for nbr in flow_network.neighbors(node):
+    #         if flow_dict[node][nbr] == 1:
+    #             print(node, nbr)
+
+    flow_vals = set()
+    for node in layer_nodes:
+        flow_vals.add(flow_dict[node]['sink'])
+
+    print(flow_vals)
     # in_degrees = set()
     # print("#Nodes in layer:", len(layer_nodes))
     # for _, value in flow_network.in_degree(nbunch=layer_nodes):
@@ -124,8 +136,11 @@ def part2():
         flow_network, flow_dict, corner_tile)
     conns_copy = tile_conns.copy()
     image_layout = generate_image_layout(tile_conns, corner_tile)
-    remove_image_borders(tiles)
-    full_image = generate_full_image(conns_copy, tiles, image_layout)
+    for row in image_layout:
+        print(row)
+    # remove_image_borders(tiles)
+    # full_image = generate_full_image(conns_copy, tiles, image_layout)
+    full_image = create_full_image(conns_copy, tiles, image_layout)
     sea_monster = process_sea_monster()
     arrangements = [
         sea_monster,
@@ -161,12 +176,18 @@ def part2():
             break
 
     total_roughness = sum([list(row).count('1') for row in full_image])
-    monster_roughness = sum([list(row).count('1') for row in sea_monster]) * num_sea_monsters
+    monsters_roughness = sum([list(row).count('1') for row in sea_monster]) * num_sea_monsters
 
     # for idx, row in enumerate(full_image):
     #     print(''.join(row))
 
-    return total_roughness - monster_roughness
+    # Draw the flow network with capacities and flow amounts
+    # draw_flow_network(flow_network, "Capacities")
+    # draw_flow_network(flow_network, "Flow amounts", flow_dict)
+
+    print(total_roughness, monsters_roughness)
+    print("Arrangement #:", idx)
+    return total_roughness - monsters_roughness
 
 
 def generate_tile_connections(flow_network, flow_dict, corner_tile):
@@ -250,17 +271,92 @@ def generate_image_layout(tile_conns, corner_tile):
     return image_layout
 
 
-def remove_image_borders(tiles):
-    for values_dict in tiles.values():
-        image = values_dict["image"]
-        image.pop()
-        image.pop(0)
-        for idx, row in enumerate(image):
-            image[idx] = row[1:-1]
+def remove_image_borders(full_image):
+    for image_row in full_image:
+        for i, tile in enumerate(image_row):
+            tile = tile[1:-1]
+            for j, row in enumerate(tile):
+                tile[j] = row[1:-1]
+
+            image_row[i] = tile
+    # for values_dict in tiles.values():
+    #     image = values_dict["image"]
+    #     image.pop()
+    #     image.pop(0)
+    #     for idx, row in enumerate(image):
+    #         image[idx] = row[1:-1]
+
+
+def create_full_image(tile_conns, tiles, image_layout):
+    opposite_sides = nx.Graph([
+        ("top", "bottom"), ("top_rev", "bottom_rev"),
+        ("right", "left"), ("right_rev", "left_rev")
+    ])
+    full_image, next_ortn = [], None
+    # Append first row
+    image_row = []
+    first_itr, second_itr = it.tee(image_layout[0])
+    next(second_itr)
+    for u_tile, v_tile in zip(first_itr, second_itr):
+        edge_ends = list(tile_conns[u_tile][v_tile].values())
+        if str(u_tile) in edge_ends[0]:
+            u_side, v_side = [ee.split('_', 1)[1] for ee in edge_ends]
+        else:
+            v_side, u_side = [ee.split('_', 1)[1] for ee in edge_ends]
+
+        target_side = next_ortn if next_ortn else u_side
+        image_row.append(rotate_tile(tiles[u_tile]["image"], target_side))
+        if target_side != u_side:
+            v_side = v_side[:-4] if "rev" in v_side else v_side + "_rev"
+
+        next_ortn = next(opposite_sides.neighbors(v_side))
+
+    image_row.append(rotate_tile(tiles[v_tile]["image"], next_ortn))
+    full_image.append(image_row)
+    # for elements in zip(*image_row):
+    #     full_image.append(list(it.chain(*elements)))
+    corner_tile_border = full_image[0][0][-1]
+    any_true = False
+    for pos, border in tiles[image_layout[1][0]]["borders"].items():
+        if border == corner_tile_border:
+            any_true = True
+            break
+
+    if not any_true:
+        for idx, tile in enumerate(full_image[0]):
+            full_image[0][idx] = np.flipud(tile).tolist()
+
+    row_idx = 1
+    for row in image_layout[1:]:
+        image_row = []
+        for col_idx, tile_id in enumerate(row):
+            north_nbr_border = ''.join(full_image[row_idx-1][col_idx][-1])
+            for pos, border in tiles[tile_id]["borders"].items():
+                if border == north_nbr_border:
+                    image_row.append(np.rot90(rotate_tile(tiles[tile_id]["image"], pos)).tolist())
+
+        full_image.append(image_row)
+        row_idx += 1
+
+    remove_image_borders(full_image)
+
+    final_image = []
+    for image_row in full_image:
+        for elements in zip(*image_row):
+            final_image.append(list(it.chain(*elements)))
+
+    return final_image
 
 
 def generate_full_image(tile_conns, tiles, image_layout):
     full_image = []
+    # tile_conns[3079][2473]['end_B'] = '3079_bottom'
+    # tile_conns[2473][1171]['end_B'] = '2473_left_rev'
+    # tile_conns[2473][1171]['end_A'] = '1171_top_rev'
+    # tile_conns = new_tile_conns()
+    # for e in tile_conns.edges(data=True):
+    #     print(e)
+
     for row in image_layout:
         image_row = []
         first_itr, second_itr = it.tee(row)
@@ -282,8 +378,43 @@ def generate_full_image(tile_conns, tiles, image_layout):
     return full_image
 
 
+def new_tile_conns():
+    old_tile_conns = nx.Graph([
+        (1951, 2729, {'end_A': '2729_bottom', 'end_B': '1951_top'}),
+        (1951, 2311, {'end_A': '2311_left', 'end_B': '1951_right'}),
+        (2729, 1427, {'end_A': '2729_right', 'end_B': '1427_left'}),
+        (2729, 2971, {'end_A': '2971_bottom', 'end_B': '2729_top'}),
+        (2311, 1427, {'end_A': '1427_bottom', 'end_B': '2311_top'}),
+        (2311, 3079, {'end_A': '3079_left_rev', 'end_B': '2311_right'}),
+        (1427, 2473, {'end_A': '1427_right', 'end_B': '2473_bottom'}),
+        (1427, 1489, {'end_A': '1489_bottom', 'end_B': '1427_top'}),
+        (3079, 2473, {'end_A': '2473_right', 'end_B': '3079_bottom_rev'}),
+        (2473, 1171, {'end_A': '1171_top', 'end_B': '2473_left'}),
+        (1171, 1489, {'end_A': '1171_right', 'end_B': '1489_right_rev'}),
+        (1489, 2971, {'end_A': '1489_left', 'end_B': '2971_right'})
+    ])
+    solution_tile_conns = nx.Graph([
+        (1951, 2729, {'end_A': '2729_bottom', 'end_B': '1951_top'}),
+        (1951, 2311, {'end_A': '2311_left_rev', 'end_B': '1951_right_rev'}),
+        (2729, 1427, {'end_A': '2729_right_rev', 'end_B': '1427_left_rev'}),
+        (2729, 2971, {'end_A': '2971_bottom', 'end_B': '2729_top'}),
+        (2311, 1427, {'end_A': '1427_bottom', 'end_B': '2311_top'}),
+        (2311, 3079, {'end_A': '3079_left', 'end_B': '2311_right_rev'}),
+        (1427, 2473, {'end_A': '1427_right_rev', 'end_B': '2473_bottom_rev'}),
+        (1427, 1489, {'end_A': '1489_bottom', 'end_B': '1427_top'}),
+        (3079, 2473, {'end_A': '2473_right_rev', 'end_B': '3079_bottom'}),
+        (2473, 1171, {'end_A': '1171_top_rev', 'end_B': '2473_left_rev'}),
+        (1171, 1489, {'end_A': '1171_right', 'end_B': '1489_right_rev'}),
+        (1489, 2971, {'end_A': '1489_left_rev', 'end_B': '2971_right_rev'})
+    ])
+
+    return solution_tile_conns
+
+
 def rotate_tile(tile_image, tile_side):
-    tile_side = tile_side.split('_', 1)[1]
+    # tile_side = tile_side.split('_', 1)[1]
+    if tile_side == "right":
+        return tile_image
 
     if "top" in tile_side:
         tile_image = np.rot90(tile_image, axes=(1, 0))
@@ -295,14 +426,16 @@ def rotate_tile(tile_image, tile_side):
     if "rev" in tile_side:
         tile_image = np.flipud(tile_image)
 
-    return tile_image
+    return tile_image.tolist()
+    # return tile_image
 
 
 def process_sea_monster():
     f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/sea-monster.txt")
     sea_monster = []
     for line in f.readlines():
-        sea_monster.append(list(line.strip('\n').replace(' ', '0').replace('#', '1')))
+        sea_monster.append(
+            list(line.strip('\n').replace(' ', '0').replace('#', '1')))
 
     return sea_monster
 
