@@ -315,7 +315,7 @@ def create_full_image(tile_conns, tiles, image_layout):
     full_image.append(image_row)
     # for elements in zip(*image_row):
     #     full_image.append(list(it.chain(*elements)))
-    corner_tile_border = full_image[0][0][-1]
+    corner_tile_border = ''.join(full_image[0][0][-1])
     any_true = False
     for pos, border in tiles[image_layout[1][0]]["borders"].items():
         if border == corner_tile_border:
