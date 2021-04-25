@@ -276,13 +276,12 @@ def orient_corner_tile(tile_conns, image_layout):
         new_side = str(corner_tile) + '_' + new_side
         edge_ends = list(tile_conns[corner_tile][nbr].values())
         if str(corner_tile) in edge_ends[0]:
-            old_side, nbr_side = edge_ends[0], edge_ends[1]
+            old_side, nbr_side = edge_ends
         else:
-            old_side, nbr_side = edge_ends[1], edge_ends[0]
+            nbr_side, old_side = edge_ends
 
         if new_side != old_side:
-            nbr_side = nbr_side[:-4] if "rev" in nbr_side else nbr_side + "_rev"
-            tile_conns.add_edge(corner_tile, nbr, end_A=new_side, end_B=nbr_side)
+            tile_conns.add_edge(corner_tile, nbr, end_A=new_side, end_B=flip_tile_side(nbr_side))
 
 
 def create_full_image(tile_conns, tiles, image_layout):
@@ -308,7 +307,7 @@ def create_full_image(tile_conns, tiles, image_layout):
         target_side = next_ortn if next_ortn else u_side
         image_row.append(rotate_tile(tiles[u_tile]["image"], target_side))
         if target_side != u_side:
-            v_side = v_side[:-4] if "rev" in v_side else v_side + "_rev"
+            v_side = flip_tile_side(v_side)
 
         next_ortn = next(opposite_sides.neighbors(v_side))
 
@@ -326,7 +325,7 @@ def create_full_image(tile_conns, tiles, image_layout):
                                     tile_conns[north_nbr][tile_id].values())).split('_', 1)[1]
 
             if tiles[tile_id]["borders"][tile_side] != north_nbr_border:
-                tile_side = tile_side[:-4] if "rev" in tile_side else tile_side + "_rev"
+                tile_side = flip_tile_side(tile_side)
 
             image_row.append(np.rot90(
                 rotate_tile(tiles[tile_id]["image"], tile_side)).tolist())
@@ -342,6 +341,10 @@ def create_full_image(tile_conns, tiles, image_layout):
             final_image.append(list(it.chain(*elements)))
 
     return final_image
+
+
+def flip_tile_side(tile_side):
+    return tile_side[:-4] if "rev" in tile_side else tile_side + "_rev"
 
 
 def rotate_tile(tile_image, tile_side):
