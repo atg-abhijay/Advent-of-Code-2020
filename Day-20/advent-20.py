@@ -169,7 +169,11 @@ def generate_tile_connections(flow_network, flow_dict, corner_tile):
             if flow_dict[side][tile] != 1:
                 continue
 
-            uv_config = next(flow_network.predecessors(side))
+            while 1:
+                uv_config = next(flow_network.predecessors(side))
+                if flow_dict[uv_config][side] == 1:
+                    break
+
             for v_tile_side in flow_network.successors(uv_config):
                 if v_tile_side == side:
                     continue
