@@ -279,12 +279,41 @@ def remove_image_borders(full_image):
                 tile[j] = row[1:-1]
 
             image_row[i] = tile
-    # for values_dict in tiles.values():
-    #     image = values_dict["image"]
-    #     image.pop()
-    #     image.pop(0)
-    #     for idx, row in enumerate(image):
-    #         image[idx] = row[1:-1]
+
+
+def orient_corner_tile(tile_conns: Graph, image_layout):
+    corner_tile = image_layout[0][0]
+    orientations = {
+        ('top', 'right'): ('', '_rev'),
+        ('right', 'bottom'): ('', ''),
+        ('bottom', 'left'): ('_rev', ''),
+        ('left', 'top'): ('_rev', '_rev')
+    }
+    right_nbr, bottom_nbr = image_layout[0][1], image_layout[1][0]
+    get_side = lambda nbr: next(filter(lambda side: str(corner_tile) in side,
+                                       tile_conns[corner_tile][nbr].values())).split('_')[1]
+
+    active_sides = (get_side(right_nbr), get_side(bottom_nbr))
+    for sides, ortns in orientations.items():
+        if active_sides == sides:
+            new_sides = [s + o for s, o in zip(sides, ortns)]
+            break
+
+        elif active_sides == tuple(reversed(sides)):
+            new_sides = [s + o for s, o in zip(reversed(sides), reversed(ortns))]
+            break
+
+    for new_side, nbr in zip(new_sides, [right_nbr, bottom_nbr]):
+        new_side = str(corner_tile) + '_' + new_side
+        edge_ends = list(tile_conns[corner_tile][nbr].values())
+        if str(corner_tile) in edge_ends[0]:
+            old_side, nbr_side = edge_ends[0], edge_ends[1]
+        else:
+            old_side, nbr_side = edge_ends[1], edge_ends[0]
+
+        if new_side != old_side:
+            nbr_side = nbr_side[:-4] if "rev" in nbr_side else nbr_side + "_rev"
+            tile_conns.add_edge(corner_tile, nbr, end_A=new_side, end_B=nbr_side)
 
 
 def create_full_image(tile_conns, tiles, image_layout):
@@ -293,6 +322,9 @@ def create_full_image(tile_conns, tiles, image_layout):
         ("right", "left"), ("right_rev", "left_rev")
     ])
     full_image, next_ortn = [], None
+
+    orient_corner_tile(tile_conns, image_layout)
+
     # Append first row
     image_row = []
     first_itr, second_itr = it.tee(image_layout[0])
@@ -313,19 +345,8 @@ def create_full_image(tile_conns, tiles, image_layout):
 
     image_row.append(rotate_tile(tiles[v_tile]["image"], next_ortn))
     full_image.append(image_row)
-    # for elements in zip(*image_row):
-    #     full_image.append(list(it.chain(*elements)))
-    corner_tile_border = ''.join(full_image[0][0][-1])
-    any_true = False
-    for pos, border in tiles[image_layout[1][0]]["borders"].items():
-        if border == corner_tile_border:
-            any_true = True
-            break
 
-    if not any_true:
-        for idx, tile in enumerate(full_image[0]):
-            full_image[0][idx] = np.flipud(tile).tolist()
-
+    # Add the rest of the rows of the image
     row_idx = 1
     for row in image_layout[1:]:
         image_row = []
