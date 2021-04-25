@@ -142,16 +142,11 @@ def part2():
     # full_image = generate_full_image(conns_copy, tiles, image_layout)
     full_image = create_full_image(conns_copy, tiles, image_layout)
     sea_monster = process_sea_monster()
-    arrangements = [
-        sea_monster,
-        np.rot90(sea_monster),
-        np.rot90(sea_monster, k=2),
-        np.rot90(sea_monster, k=3),
-        np.flipud(sea_monster),
-        np.fliplr(sea_monster),
-        np.flipud(np.rot90(sea_monster)),
-        np.fliplr(np.rot90(sea_monster))
-    ]
+    arrangements = [sea_monster, np.flipud(sea_monster)]
+    for num_rots in range(1, 4):
+        arrangements.append(np.rot90(sea_monster, k=num_rots))
+        arrangements.append(np.flipud(arrangements[-1]))
+
     corner_x, corner_y = 0, 0
     image_height, image_width = len(full_image), len(full_image[0])
     num_sea_monsters = 0
@@ -175,11 +170,9 @@ def part2():
         if num_sea_monsters:
             break
 
-    total_roughness = sum([list(row).count('1') for row in full_image])
-    monsters_roughness = sum([list(row).count('1') for row in sea_monster]) * num_sea_monsters
-
-    # for idx, row in enumerate(full_image):
-    #     print(''.join(row))
+    eval_roughness = lambda grid: sum([list(row).count('1') for row in grid])
+    total_roughness = eval_roughness(full_image)
+    monsters_roughness = eval_roughness(sea_monster) * num_sea_monsters
 
     # Draw the flow network with capacities and flow amounts
     # draw_flow_network(flow_network, "Capacities")
@@ -355,6 +348,7 @@ def create_full_image(tile_conns, tiles, image_layout):
             for pos, border in tiles[tile_id]["borders"].items():
                 if border == north_nbr_border:
                     image_row.append(np.rot90(rotate_tile(tiles[tile_id]["image"], pos)).tolist())
+                    break
 
         full_image.append(image_row)
         row_idx += 1
@@ -433,7 +427,10 @@ def new_tile_conns():
 
 
 def rotate_tile(tile_image, tile_side):
-    # tile_side = tile_side.split('_', 1)[1]
+    """
+    Rotate tile such that tile_side
+    is situated on the right side
+    """
     if tile_side == "right":
         return tile_image
 
@@ -448,17 +445,12 @@ def rotate_tile(tile_image, tile_side):
         tile_image = np.flipud(tile_image)
 
     return tile_image.tolist()
-    # return tile_image
 
 
 def process_sea_monster():
     f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/sea-monster.txt")
-    sea_monster = []
-    for line in f.readlines():
-        sea_monster.append(
-            list(line.strip('\n').replace(' ', '0').replace('#', '1')))
-
-    return sea_monster
+    return [list(line.strip('\n').replace(' ', '0').replace('#', '1'))
+            for line in f.readlines()]
 
 
 def run():
