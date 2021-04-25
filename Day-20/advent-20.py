@@ -320,11 +320,16 @@ def create_full_image(tile_conns, tiles, image_layout):
     for row in image_layout[1:]:
         image_row = []
         for col_idx, tile_id in enumerate(row):
+            north_nbr = image_layout[row_idx-1][col_idx]
             north_nbr_border = ''.join(full_image[row_idx-1][col_idx][-1])
-            for pos, border in tiles[tile_id]["borders"].items():
-                if border == north_nbr_border:
-                    image_row.append(np.rot90(rotate_tile(tiles[tile_id]["image"], pos)).tolist())
-                    break
+            tile_side = next(filter(lambda ee: str(tile_id) in ee,
+                                    tile_conns[north_nbr][tile_id].values())).split('_', 1)[1]
+
+            if tiles[tile_id]["borders"][tile_side] != north_nbr_border:
+                tile_side = tile_side[:-4] if "rev" in tile_side else tile_side + "_rev"
+
+            image_row.append(np.rot90(
+                rotate_tile(tiles[tile_id]["image"], tile_side)).tolist())
 
         full_image.append(image_row)
         row_idx += 1
