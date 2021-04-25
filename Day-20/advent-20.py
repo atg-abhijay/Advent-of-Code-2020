@@ -81,39 +81,12 @@ def build_flow_network(tiles):
 
 
 def part1():
-    tiles = process_input()
-    flow_network = build_flow_network(tiles)
+    flow_network = build_flow_network(process_input())
     _, flow_dict = nx.maximum_flow(flow_network, 'source', 'sink')
-
-    # print(flow_network.edges(data=True))
 
     # Draw the flow network with capacities and flow amounts
     # draw_flow_network(flow_network, "Capacities")
-    # draw_flow_network(residual_graph, "Residual Graph")
     # draw_flow_network(flow_network, "Flow amounts", flow_dict)
-
-    layer_nodes = [node for node, data in flow_network.nodes(
-        data=True) if data['layer'] == 4]
-
-    # for node in layer_nodes:
-    #     for nbr in flow_network.neighbors(node):
-    #         if flow_dict[node][nbr] == 1:
-    #             print(node, nbr)
-
-    flow_vals = set()
-    for node in layer_nodes:
-        flow_vals.add(flow_dict[node]['sink'])
-
-    print(flow_vals)
-    # in_degrees = set()
-    # print("#Nodes in layer:", len(layer_nodes))
-    # for _, value in flow_network.in_degree(nbunch=layer_nodes):
-    #     in_degrees.add(value)
-
-    # print(in_degrees)
-
-    # print("#Nodes:", flow_network.number_of_nodes())
-    # print("#Edges:", flow_network.number_of_edges())
 
     result = 1
     for tile_id, flow in flow_dict.items():
@@ -138,8 +111,7 @@ def part2():
     image_layout = generate_image_layout(tile_conns, corner_tile)
     for row in image_layout:
         print(row)
-    # remove_image_borders(tiles)
-    # full_image = generate_full_image(conns_copy, tiles, image_layout)
+
     full_image = create_full_image(conns_copy, tiles, image_layout)
     sea_monster = process_sea_monster()
     arrangements = [sea_monster, np.flipud(sea_monster)]
@@ -274,7 +246,7 @@ def remove_image_borders(full_image):
             image_row[i] = tile
 
 
-def orient_corner_tile(tile_conns: Graph, image_layout):
+def orient_corner_tile(tile_conns, image_layout):
     corner_tile = image_layout[0][0]
     orientations = {
         ('top', 'right'): ('', '_rev'),
@@ -361,69 +333,6 @@ def create_full_image(tile_conns, tiles, image_layout):
             final_image.append(list(it.chain(*elements)))
 
     return final_image
-
-
-def generate_full_image(tile_conns, tiles, image_layout):
-    full_image = []
-    # tile_conns[3079][2473]['end_B'] = '3079_bottom'
-    # tile_conns[2473][1171]['end_B'] = '2473_left_rev'
-    # tile_conns[2473][1171]['end_A'] = '1171_top_rev'
-    # tile_conns = new_tile_conns()
-    # for e in tile_conns.edges(data=True):
-    #     print(e)
-
-    for row in image_layout:
-        image_row = []
-        first_itr, second_itr = it.tee(row)
-        next(second_itr)
-        for first_tile, second_tile in zip(first_itr, second_itr):
-            edge_ends = list(tile_conns[first_tile][second_tile].values())
-            tile_side = edge_ends[0] if str(first_tile) in edge_ends[0] else edge_ends[1]
-            image_row.append(rotate_tile(tiles[first_tile]["image"], tile_side))
-
-        tile_side = edge_ends[0] if str(second_tile) in edge_ends[0] else edge_ends[1]
-        image_row.append(np.fliplr(rotate_tile(tiles[second_tile]["image"], tile_side)))
-
-        for elements in zip(*image_row):
-            full_image.append(list(it.chain(*elements)))
-
-    # num_rows = len(full_image)
-    # boundary = num_rows - 8 + 1
-    # full_image[boundary:] = np.flipud(full_image[boundary:])
-    return full_image
-
-
-def new_tile_conns():
-    old_tile_conns = nx.Graph([
-        (1951, 2729, {'end_A': '2729_bottom', 'end_B': '1951_top'}),
-        (1951, 2311, {'end_A': '2311_left', 'end_B': '1951_right'}),
-        (2729, 1427, {'end_A': '2729_right', 'end_B': '1427_left'}),
-        (2729, 2971, {'end_A': '2971_bottom', 'end_B': '2729_top'}),
-        (2311, 1427, {'end_A': '1427_bottom', 'end_B': '2311_top'}),
-        (2311, 3079, {'end_A': '3079_left_rev', 'end_B': '2311_right'}),
-        (1427, 2473, {'end_A': '1427_right', 'end_B': '2473_bottom'}),
-        (1427, 1489, {'end_A': '1489_bottom', 'end_B': '1427_top'}),
-        (3079, 2473, {'end_A': '2473_right', 'end_B': '3079_bottom_rev'}),
-        (2473, 1171, {'end_A': '1171_top', 'end_B': '2473_left'}),
-        (1171, 1489, {'end_A': '1171_right', 'end_B': '1489_right_rev'}),
-        (1489, 2971, {'end_A': '1489_left', 'end_B': '2971_right'})
-    ])
-    solution_tile_conns = nx.Graph([
-        (1951, 2729, {'end_A': '2729_bottom', 'end_B': '1951_top'}),
-        (1951, 2311, {'end_A': '2311_left_rev', 'end_B': '1951_right_rev'}),
-        (2729, 1427, {'end_A': '2729_right_rev', 'end_B': '1427_left_rev'}),
-        (2729, 2971, {'end_A': '2971_bottom', 'end_B': '2729_top'}),
-        (2311, 1427, {'end_A': '1427_bottom', 'end_B': '2311_top'}),
-        (2311, 3079, {'end_A': '3079_left', 'end_B': '2311_right_rev'}),
-        (1427, 2473, {'end_A': '1427_right_rev', 'end_B': '2473_bottom_rev'}),
-        (1427, 1489, {'end_A': '1489_bottom', 'end_B': '1427_top'}),
-        (3079, 2473, {'end_A': '2473_right_rev', 'end_B': '3079_bottom'}),
-        (2473, 1171, {'end_A': '1171_top_rev', 'end_B': '2473_left_rev'}),
-        (1171, 1489, {'end_A': '1171_right', 'end_B': '1489_right_rev'}),
-        (1489, 2971, {'end_A': '1489_left_rev', 'end_B': '2971_right_rev'})
-    ])
-
-    return solution_tile_conns
 
 
 def rotate_tile(tile_image, tile_side):
