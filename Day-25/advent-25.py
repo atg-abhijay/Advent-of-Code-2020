@@ -29,7 +29,7 @@ def part1():
 
 
 def part2():
-    return
+    return "Freebie!! - Gift from the North Pole :)"
 
 
 def run():
