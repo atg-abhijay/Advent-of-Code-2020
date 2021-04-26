@@ -12,7 +12,20 @@ def process_input():
 
 
 def part1():
-    return
+    card_pubkey, door_pubkey = process_input()
+    initial_subject_number, divisor = 7, 20201227
+    value, card_loop_size = 1, 0
+    while value != card_pubkey:
+        value *= initial_subject_number
+        value %= divisor
+        card_loop_size += 1
+
+    encryption_key = 1
+    for _ in range(card_loop_size):
+        encryption_key *= door_pubkey
+        encryption_key %= divisor
+
+    return encryption_key
 
 
 def part2():
