@@ -6,4 +6,4 @@ From the [About](https://adventofcode.com/2020/about) page of Advent of Code -
 
 ## Current Status
 
-![Current status](./current-status.png)
+https://user-images.githubusercontent.com/23014438/116113736-c6702980-a686-11eb-810e-4d018998af67.mov
