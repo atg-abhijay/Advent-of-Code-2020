@@ -9,14 +9,9 @@ def part1():
     for policy_pwd in f.readlines():
         limits, letter, pwd = policy_pwd.split(sep=' ')
         lower_lim, upper_lim = [int(li) for li in limits.split(sep='-')]
-        letter = letter[0]
+        letter_count = pwd.count(letter[0])
 
-        letter_count = 0
-        for char in pwd:
-            if char == letter:
-                letter_count += 1
-
-        if letter_count >= lower_lim and letter_count <= upper_lim:
+        if lower_lim <= letter_count <= upper_lim:
             num_valid_pwds += 1
 
     return num_valid_pwds
