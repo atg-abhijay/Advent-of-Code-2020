@@ -3,20 +3,17 @@ URL for challenge: https://adventofcode.com/2020/day/3
 """
 
 
+from functools import reduce
+from operator import mul
+
+
 def process_input():
     f = open("advent-03-input.txt")
-    grid = []
-    for row in f.readlines():
-        grid.append(list(row.strip()))
-
-    num_rows = len(grid)
-    num_cols = len(grid[0])
-
-    return [grid, num_rows, num_cols]
+    return [list(row.strip()) for row in f.readlines()]
 
 
-def part1(input_details, right_mvmt, down_mvmt):
-    grid, num_rows, num_cols = input_details
+def part1(grid, right_mvmt, down_mvmt):
+    num_rows, num_cols = len(grid), len(grid[0])
     current_row, current_col, num_trees = 0, 0, 0
 
     while current_row < num_rows:
@@ -30,15 +27,10 @@ def part1(input_details, right_mvmt, down_mvmt):
 
 
 def part2():
-    result = 1
-    input_details = process_input()
-    result *= part1(input_details, 1, 1)
-    result *= part1(input_details, 3, 1)
-    result *= part1(input_details, 5, 1)
-    result *= part1(input_details, 7, 1)
-    result *= part1(input_details, 1, 2)
-
-    return result
+    grid = process_input()
+    trees_encounterd = map(lambda slope: part1(grid, *slope),
+                           [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)])
+    return reduce(mul, trees_encounterd)
 
 
 def run():
