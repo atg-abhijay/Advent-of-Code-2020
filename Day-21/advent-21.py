@@ -41,6 +41,10 @@ def part1():
     mm_edges = maximum_matching(Graph(allergen_prospects))
     ingr_without_allergens = ingr_appearances.keys() - (mm_edges.keys() - allergen_prospects.keys())
 
+    # Uncomment the following to draw the graphs -
+    # draw_bipartite_graph(Graph(allergen_prospects), allergen_prospects.keys())
+    # draw_bipartite_graph(Graph(mm_edges.items()), allergen_prospects.keys())
+
     return sum([ingr_appearances[ingr] for ingr in ingr_without_allergens])
 
 
@@ -48,6 +52,10 @@ def part2():
     _, allergen_prospects = process_input()
     mm_edges = maximum_matching(Graph(allergen_prospects))
     ingr_with_allergens = [mm_edges[allergen] for allergen in allergen_prospects]
+
+    # Uncomment the following to draw the graphs -
+    # draw_bipartite_graph(Graph(allergen_prospects), allergen_prospects.keys())
+    # draw_bipartite_graph(Graph(mm_edges.items()), allergen_prospects.keys())
 
     return ','.join(sorted(ingr_with_allergens, key=lambda x: mm_edges[x]))
 
@@ -68,7 +76,7 @@ def run():
 def draw_bipartite_graph(graph, first_partition_nodes):
     plt.figure()
     draw(graph, pos=bipartite_layout(graph, first_partition_nodes),
-         labels={node: node for node in graph.nodes}, node_size=600, node_color="green")
+         labels={node: node for node in graph}, node_size=600, node_color="green")
 
 
 run()

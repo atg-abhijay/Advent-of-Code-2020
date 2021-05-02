@@ -11,8 +11,10 @@ from tqdm import trange
 def process_input():
     f = open("advent-24-input.txt")
     tiles = {(0, 0): 0}
-    increments = {'e': 2, 'w': -2, 'ne': (1, 1),
-                  'nw': (-1, 1), 'se': (1, -1), 'sw': (-1, -1)}
+    increments = {
+        'e': 2, 'ne': (1, 1), 'se': (1, -1),
+        'w': -2, 'nw': (-1, 1), 'sw': (-1, -1)
+    }
 
     for line in f.readlines():
         line = line.strip()

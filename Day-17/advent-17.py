@@ -4,6 +4,7 @@ URL for challenge: https://adventofcode.com/2020/day/17
 
 
 from copy import deepcopy
+from tqdm import trange
 
 
 def process_input():
@@ -41,7 +42,7 @@ def solve(is_four_dimn):
     # track of the state transitions
     pocket_dimn_after = deepcopy(pocket_dimn)
 
-    for i in range(6):
+    for _ in trange(6):
         expand_dimension(pocket_dimn, pocket_dimn_after, is_four_dimn)
         run_cycle(pocket_dimn, pocket_dimn_after, is_four_dimn)
         # Copy over the modified dimension

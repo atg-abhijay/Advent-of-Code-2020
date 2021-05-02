@@ -3,15 +3,12 @@ URL for challenge: https://adventofcode.com/2020/day/1
 """
 
 from functools import reduce
+from operator import mul
 
 
 def process_input():
     f = open("advent-01-input.txt")
-    amounts = []
-    for line in f.readlines():
-        amounts.append(int(line))
-
-    return amounts
+    return [int(line) for line in f.readlines()]
 
 
 def part1(target_amount, amounts):
@@ -20,15 +17,14 @@ def part1(target_amount, amounts):
     with the set of their inverses, the only amounts
     that will be left will be x and (target - x).
     """
-    inverse_amounts = [target_amount - x for x in amounts]
-    pair_entries = (set(amounts)).intersection(set(inverse_amounts))
+    pair_entries = {target_amount - x for x in amounts}.intersection(amounts)
     num_entries = len(pair_entries)
 
     if num_entries == 1:
         return pair_entries.pop() ** 2
 
-    elif num_entries == 2:
-        return reduce(lambda x, y: x*y, pair_entries)
+    if num_entries == 2:
+        return reduce(mul, pair_entries)
 
     # This case is only possible when Part 1 is used by Part 2
     return None
