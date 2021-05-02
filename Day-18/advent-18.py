@@ -12,7 +12,7 @@ import re
 import string
 
 
-class Node(object):
+class Node():
     def __init__(self, value):
         self.value = value
         self.left_child = None
@@ -103,8 +103,8 @@ def evaluate_tree(node):
 
     if node.value == '+':
         return evaluate_tree(node.left_child) + evaluate_tree(node.right_child)
-    elif node.value == '*':
-        return evaluate_tree(node.left_child) * evaluate_tree(node.right_child)
+
+    return evaluate_tree(node.left_child) * evaluate_tree(node.right_child)
 
 
 def get_root_node(node):
@@ -170,18 +170,10 @@ def gather_edges(node):
 
 
 def draw_tree(root_node):
-    all_edges = gather_edges(root_node)
-    tree = nx.Graph()
-    tree.add_edges_from(all_edges)
-    nodes = list(tree.nodes)
-    labels = {}
-    for node in nodes:
-        labels[node] = node.value
-
-    pos = graphviz_layout(tree, prog='dot')
+    tree = nx.Graph(gather_edges(root_node))
     plt.figure()
-    nx.draw(tree, pos=pos, with_labels=False, arrows=False)
-    nx.draw_networkx_labels(tree, pos=pos, labels=labels)
+    nx.draw(tree, pos=graphviz_layout(tree, prog='dot'),
+            labels={node: node.value for node in tree}, arrows=False)
 
 
 run()
