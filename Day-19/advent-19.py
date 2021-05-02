@@ -5,7 +5,7 @@ Check PR description for brief notes and comments.
 """
 
 
-class Rule(object):
+class Rule():
     def __init__(self, value, sub_rules):
         self.value = value
         self.sub_rules = sub_rules
