@@ -5,7 +5,7 @@ Check PR description for some brief notes.
 """
 
 
-from tqdm import tqdm
+from tqdm import trange
 
 
 def process_input():
@@ -53,7 +53,7 @@ def part2():
 
 
 def play_game(neighbours, num_moves, current_cup, highest_cup):
-    for _ in tqdm(range(num_moves)):
+    for _ in trange(num_moves):
         target_cups = pick_up_cups(neighbours, current_cup)
         destn_cup = find_destination_cup(neighbours, current_cup, highest_cup)
         place_cups(neighbours, destn_cup, target_cups)
