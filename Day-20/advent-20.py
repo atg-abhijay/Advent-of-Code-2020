@@ -11,8 +11,7 @@ from tqdm import tqdm
 
 
 def process_input():
-    f = open(
-        "/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/advent-20-input.txt")
+    f = open("advent-20-input.txt")
     tiles, current_tile_id = {}, 0
 
     # Parse images of the tiles
@@ -81,6 +80,7 @@ def build_flow_network(tiles):
 
 
 def part1():
+    # Note: Takes about 5 seconds to run
     flow_network = build_flow_network(process_input())
     _, flow_dict = nx.maximum_flow(flow_network, 'source', 'sink')
 
@@ -97,6 +97,7 @@ def part1():
 
 
 def part2():
+    # Note: Takes about 5 seconds to run
     tiles = process_input()
     flow_network = build_flow_network(tiles)
     _, flow_dict = nx.maximum_flow(flow_network, 'source', 'sink')
@@ -109,8 +110,8 @@ def part2():
         flow_network, flow_dict, corner_tile)
     conns_copy = tile_conns.copy()
     image_layout = generate_image_layout(tile_conns, corner_tile)
-    for row in image_layout:
-        print(row)
+    # for row in image_layout:
+    #     print(row)
 
     full_image = create_full_image(conns_copy, tiles, image_layout)
     sea_monster = process_sea_monster()
@@ -150,8 +151,8 @@ def part2():
     # draw_flow_network(flow_network, "Capacities")
     # draw_flow_network(flow_network, "Flow amounts", flow_dict)
 
-    print(total_roughness, monsters_roughness)
-    print("Arrangement #:", idx)
+    # print(total_roughness, monsters_roughness)
+    # print("Arrangement #:", idx)
     return total_roughness - monsters_roughness
 
 
@@ -369,14 +370,13 @@ def rotate_tile(tile_image, tile_side):
 
 
 def process_sea_monster():
-    f = open("/Users/AbhijayGupta/Projects/Advent-of-Code-2020/Day-20/sea-monster.txt")
+    f = open("sea-monster.txt")
     return [list(line.strip('\n').replace(' ', '0').replace('#', '1'))
             for line in f.readlines()]
 
 
 def run():
-    # chall = int(input("Please enter either 1 or 2 for the challenges: "))
-    chall = 2
+    chall = int(input("Please enter either 1 or 2 for the challenges: "))
     if chall == 1:
         print(part1())
     elif chall == 2:
