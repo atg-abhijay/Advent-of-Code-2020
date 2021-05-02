@@ -75,26 +75,25 @@ def part2():
     # the valid values for all of the fields
     all_valid_vals = set.union(*ticket_fields.values())
     valid_tickets = [t for t in nearby_tickets if is_ticket_valid(t, all_valid_vals)[0]]
-    fields = list(ticket_fields.keys())
 
     graph = Graph()
     for column_idx in range(len(valid_tickets[0])):
         column_values = {ticket[column_idx] for ticket in valid_tickets}
-        for field in fields:
+        for field in ticket_fields:
             if column_values.issubset(ticket_fields[field]):
                 graph.add_edge(field, column_idx)
 
-    output = 1
+    departures_product = 1
     mm_edges = maximum_matching(graph).items()
     for start_edge, end_edge in mm_edges:
         if isinstance(start_edge, str) and "departure" in start_edge:
-            output *= my_ticket[end_edge]
+            departures_product *= my_ticket[end_edge]
 
     # Uncomment the following to draw the graphs -
-    # draw_bipartite_graph(graph, fields)
-    # draw_bipartite_graph(Graph(mm_edges), fields)
+    # draw_bipartite_graph(graph, ticket_fields.keys())
+    # draw_bipartite_graph(Graph(mm_edges), ticket_fields.keys())
 
-    return output
+    return departures_product
 
 
 def run():
@@ -113,7 +112,7 @@ def run():
 def draw_bipartite_graph(graph, first_partition_nodes):
     plt.figure()
     draw(graph, pos=bipartite_layout(graph, first_partition_nodes),
-         labels={node: node for node in graph.nodes}, node_size=600, node_color="green")
+         labels={node: node for node in graph}, node_size=600, node_color="green")
 
 
 run()
