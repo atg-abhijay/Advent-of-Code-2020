@@ -3,6 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/20
 """
 
 
+from functools import partial
 import itertools as it
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -84,14 +85,14 @@ def part1():
     flow_network = build_flow_network(process_input())
     _, flow_dict = nx.maximum_flow(flow_network, 'source', 'sink')
 
-    # Draw the flow network with capacities and flow amounts
-    # draw_flow_network(flow_network, "Capacities")
-    # draw_flow_network(flow_network, "Flow amounts", flow_dict)
-
     result = 1
     for tile_id, flow in flow_dict.items():
         if 'sink' in flow and flow['sink'] == 2:
             result *= tile_id
+
+    # Draw the flow network with capacities and flow amounts
+    # draw_flow_network(flow_network, "Capacities")
+    # draw_flow_network(flow_network, "Flow amounts", flow_dict)
 
     return result
 
@@ -106,57 +107,29 @@ def part2():
             corner_tile = tile
             break
 
-    tile_conns = generate_tile_connections(
-        flow_network, flow_dict, corner_tile)
+    tile_conns = generate_tile_conns(flow_network, flow_dict, corner_tile)
     conns_copy = tile_conns.copy()
     image_layout = generate_image_layout(tile_conns, corner_tile)
-    # for row in image_layout:
-    #     print(row)
 
     full_image = create_full_image(conns_copy, tiles, image_layout)
-    sea_monster = process_sea_monster()
-    arrangements = [sea_monster, np.flipud(sea_monster)]
-    for num_rots in range(1, 4):
-        arrangements.append(np.rot90(sea_monster, k=num_rots))
-        arrangements.append(np.flipud(arrangements[-1]))
-
-    corner_x, corner_y = 0, 0
-    image_height, image_width = len(full_image), len(full_image[0])
-    num_sea_monsters = 0
-    for idx, arrng in enumerate(arrangements):
-        height, width = len(arrng), len(arrng[0])
-        for corner_y in range(image_height):
-            for corner_x in range(image_width):
-                image_chunk = []
-                width_bound = corner_x + width < image_width + 1
-                height_bound = corner_y + height < image_height + 1
-                if width_bound and height_bound:
-                    for hgt in range(height):
-                        image_chunk.append(full_image[corner_y+hgt][corner_x:corner_x+width])
-
-                    bin_monster = int(''.join(it.chain(*arrng)), 2)
-                    bin_chunk = int(''.join(it.chain(*image_chunk)), 2)
-
-                    if bin_monster & bin_chunk == bin_monster:
-                        num_sea_monsters += 1
-
+    arrangements = process_sea_monster()
+    for arrng in arrangements:
+        num_sea_monsters = find_sea_monsters(full_image, arrng)
         if num_sea_monsters:
             break
 
     eval_roughness = lambda grid: sum([list(row).count('1') for row in grid])
     total_roughness = eval_roughness(full_image)
-    monsters_roughness = eval_roughness(sea_monster) * num_sea_monsters
+    monsters_roughness = eval_roughness(arrangements[0]) * num_sea_monsters
 
     # Draw the flow network with capacities and flow amounts
     # draw_flow_network(flow_network, "Capacities")
     # draw_flow_network(flow_network, "Flow amounts", flow_dict)
 
-    # print(total_roughness, monsters_roughness)
-    # print("Arrangement #:", idx)
     return total_roughness - monsters_roughness
 
 
-def generate_tile_connections(flow_network, flow_dict, corner_tile):
+def generate_tile_conns(flow_network, flow_dict, corner_tile):
     tile_conns = nx.Graph()
     tile_conns.add_node(corner_tile, visited=False)
     nodes = tile_conns.nodes
@@ -242,13 +215,13 @@ def generate_image_layout(tile_conns, corner_tile):
 
 
 def remove_image_borders(full_image):
-    for image_row in full_image:
-        for i, tile in enumerate(image_row):
-            tile = tile[1:-1]
-            for j, row in enumerate(tile):
-                tile[j] = row[1:-1]
+    num_rows, num_cols = len(full_image), len(full_image[0])
+    for i, j in it.product(range(num_rows), range(num_cols)):
+        tile = full_image[i][j][1:-1]
+        for k, tile_row in enumerate(tile):
+            tile[k] = tile_row[1:-1]
 
-            image_row[i] = tile
+        full_image[i][j] = tile
 
 
 def orient_corner_tile(tile_conns, image_layout):
@@ -353,26 +326,59 @@ def rotate_tile(tile_image, tile_side):
     Rotate tile such that tile_side
     is situated on the right side
     """
-    if tile_side == "right":
+    # Note: 'rev' has to come after all
+    # others because of the functions chosen.
+    rotations = [
+        ('top', partial(np.rot90, axes=(1, 0))),
+        ('right', lambda x: x),
+        ('left', np.fliplr),
+        ('bottom', np.transpose),
+        ('rev', np.flipud)
+    ]
+
+    for side, func in rotations:
+        if side in tile_side:
+            tile_image = func(tile_image)
+
+    if isinstance(tile_image, list):
         return tile_image
-
-    if "top" in tile_side:
-        tile_image = np.rot90(tile_image, axes=(1, 0))
-    elif "left" in tile_side:
-        tile_image = np.fliplr(tile_image)
-    elif "bottom" in tile_side:
-        tile_image = np.transpose(tile_image)
-
-    if "rev" in tile_side:
-        tile_image = np.flipud(tile_image)
 
     return tile_image.tolist()
 
 
 def process_sea_monster():
     f = open("sea-monster.txt")
-    return [list(line.strip('\n').replace(' ', '0').replace('#', '1'))
-            for line in f.readlines()]
+    sea_monster = [list(line.strip('\n').replace(' ', '0').replace('#', '1'))
+                   for line in f.readlines()]
+
+    arrangements = [sea_monster, np.flipud(sea_monster)]
+    for num_rots in range(1, 4):
+        arrangements.append(np.rot90(sea_monster, k=num_rots))
+        arrangements.append(np.flipud(arrangements[-1]))
+
+    return arrangements
+
+
+def find_sea_monsters(full_image, arrangement):
+    image_height, image_width = len(full_image), len(full_image[0])
+    height, width = len(arrangement), len(arrangement[0])
+    bin_monster = int(''.join(it.chain(*arrangement)), 2)
+
+    num_sea_monsters = 0
+    for corner_y, corner_x in it.product(range(image_height), range(image_width)):
+        width_bound = corner_x + width < image_width + 1
+        height_bound = corner_y + height < image_height + 1
+        if not width_bound or not height_bound:
+            continue
+
+        image_chunk = [full_image[corner_y+hgt][corner_x:corner_x+width]
+                       for hgt in range(height)]
+
+        bin_chunk = int(''.join(it.chain(*image_chunk)), 2)
+        if bin_monster & bin_chunk == bin_monster:
+            num_sea_monsters += 1
+
+    return num_sea_monsters
 
 
 def run():
@@ -396,18 +402,16 @@ def draw_flow_network(graph, title, flow_dict=None):
 
     # Draw with flow amounts
     if flow_dict:
-        tuple_flows = {}
+        edge_labels = {}
         for tile_id, flow in flow_dict.items():
             for end_edge, flow_amount in flow.items():
-                tuple_flows[(tile_id, end_edge)] = flow_amount
-
-        nx.draw_networkx_edge_labels(
-            graph, pos=positions, edge_labels=tuple_flows)
+                edge_labels[(tile_id, end_edge)] = flow_amount
 
     # Draw with capacities
     else:
-        nx.draw_networkx_edge_labels(
-            graph, pos=positions, edge_labels=nx.get_edge_attributes(graph, 'capacity'))
+        edge_labels = nx.get_edge_attributes(graph, 'capacity')
+
+    nx.draw_networkx_edge_labels(graph, pos=positions, edge_labels=edge_labels)
 
 
 run()
