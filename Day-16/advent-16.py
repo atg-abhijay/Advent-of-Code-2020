@@ -4,6 +4,7 @@ URL for challenge: https://adventofcode.com/2020/day/16
 Check PR description for notes on solution.
 """
 
+from itertools import product
 import matplotlib.pyplot as plt
 from networkx import draw
 from networkx import Graph
@@ -76,13 +77,7 @@ def part2():
     all_valid_vals = set.union(*ticket_fields.values())
     valid_tickets = [t for t in nearby_tickets if is_ticket_valid(t, all_valid_vals)[0]]
 
-    graph = Graph()
-    for column_idx in range(len(valid_tickets[0])):
-        column_values = {ticket[column_idx] for ticket in valid_tickets}
-        for field in ticket_fields:
-            if column_values.issubset(ticket_fields[field]):
-                graph.add_edge(field, column_idx)
-
+    graph = build_bipartite_graph(valid_tickets, ticket_fields)
     departures_product = 1
     mm_edges = maximum_matching(graph).items()
     for start_edge, end_edge in mm_edges:
@@ -94,6 +89,16 @@ def part2():
     # draw_bipartite_graph(Graph(mm_edges), ticket_fields.keys())
 
     return departures_product
+
+
+def build_bipartite_graph(valid_tickets, ticket_fields):
+    graph, num_columns = Graph(), len(valid_tickets[0])
+    for column_idx, field in product(range(num_columns), ticket_fields):
+        column_values = {ticket[column_idx] for ticket in valid_tickets}
+        if column_values.issubset(ticket_fields[field]):
+            graph.add_edge(field, column_idx)
+
+    return graph
 
 
 def run():
