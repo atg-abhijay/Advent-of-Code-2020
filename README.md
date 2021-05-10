@@ -16,9 +16,9 @@ Simply run `python advent-xx.py` for Day `XX`. The program will prompt you to en
 
 ## Cyclomatic Complexity
 
-The Cyclomatic Complexity of the solutions can be found in the table below. It is a metric that can be used to calculate the complexity of a program. These values were calculated using `radon`, which is a tool for Python to calculate code metrics.
+The [Cyclomatic Complexity](https://en.wikipedia.org/wiki/Cyclomatic_complexity) of the solutions can be found in the table below. It is a metric that can be used to calculate the complexity of a program. These values were calculated using `radon`, which is a tool for Python to calculate code metrics.
 
-Information about Cyclomatic Complexity can be found [here](https://en.wikipedia.org/wiki/Cyclomatic_complexity) and information about `radon`'s usage of it can be found [here](https://radon.readthedocs.io/en/latest/intro.html#cyclomatic-complexity).
+Information about `radon`'s usage of it can be found [here](https://radon.readthedocs.io/en/latest/intro.html#cyclomatic-complexity).
 
 | Solution | Complexity | Solution | Complexity | Solution | Complexity
 | -------- | ---------- | -------- | ---------- | -------- | ----------
@@ -31,3 +31,14 @@ Information about Cyclomatic Complexity can be found [here](https://en.wikipedia
 | [Day 07](./Day-07/advent-07.py) | `A (2.71)` | [Day 16](./Day-16/advent-16.py) | `A (4.33)` | [Day 25](./Day-25/advent-25.py) | `A (2.00)`
 | [Day 08](./Day-08/advent-08.py) | `A (3.60)` | [Day 17](./Day-17/advent-17.py) | `B (5.75)` |  |
 | [Day 09](./Day-09/advent-09.py) | `A (3.75)` | [Day 18](./Day-18/advent-18.py) | `A (3.25)` |  |
+
+The scores, sourced from the `radon` documentation [here](https://radon.readthedocs.io/en/latest/commandline.html#the-cc-command), can be understood as follows -
+
+| CC Score | Rank | Risk
+| -------- | ---- | ----
+| 1 - 5 | `A` | low - simple block
+| 6 - 10 | `B` | low - well structured and stable block
+| 11 - 20 | `C` | moderate - slightly complex block
+| 21 - 30 | `D` | more than moderate - more complex block
+| 31 - 40 | `E` | high - complex block, alarming
+| 41+ | `F` | very high - error-prone, unstable block
