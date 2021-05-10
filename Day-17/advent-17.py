@@ -4,6 +4,7 @@ URL for challenge: https://adventofcode.com/2020/day/17
 
 
 from copy import deepcopy
+from itertools import product
 from tqdm import trange
 
 
@@ -29,6 +30,14 @@ def process_input():
     return pocket_dimn
 
 
+def flatten_dimension(pocket_dimn):
+    for w, hypercube in pocket_dimn.items():
+        for z, layer in hypercube.items():
+            for x, row in layer.items():
+                for y, state in row.items():
+                    yield(w, z, x, y, state)
+
+
 def solve(is_four_dimn):
     """
     Since all the cubes change their state
@@ -51,11 +60,8 @@ def solve(is_four_dimn):
 
     # Determine the number of active cubes
     num_active_cubes = 0
-    for w, hypercube in pocket_dimn.items():
-        for z, layer in hypercube.items():
-            for x, row in layer.items():
-                for y, state in row.items():
-                    num_active_cubes += state
+    for _, _, _, _, state in flatten_dimension(pocket_dimn):
+        num_active_cubes += state
 
     return num_active_cubes
 
@@ -64,13 +70,9 @@ def expand_dimension(pocket_dimn, pocket_dimn_after, is_four_dimn):
     # The state transitions will occur for the
     # current input AS WELL AS the immediate
     # neighbours. Add those neighbours.
-    for w, hypercube in pocket_dimn.items():
-        for z, layer in hypercube.items():
-            for x, row in layer.items():
-                for y, state in row.items():
-                    neighbours = generate_neighbour_locations(
-                        (w, z, x, y), is_four_dimn)
-                    add_neighbours_to_dimn(neighbours, pocket_dimn_after)
+    for w, z, x, y, _ in flatten_dimension(pocket_dimn):
+        neighbours = generate_neighbour_locations((w, z, x, y), is_four_dimn)
+        add_neighbours_to_dimn(neighbours, pocket_dimn_after)
 
 
 def run_cycle(pocket_dimn, pocket_dimn_after, is_four_dimn):
@@ -78,23 +80,18 @@ def run_cycle(pocket_dimn, pocket_dimn_after, is_four_dimn):
     # and the immediate neighbours. Apply the
     # state transitions for all of them with
     # respect to the original dimension.
-    for w, hypercube in pocket_dimn_after.items():
-        for z, layer in hypercube.items():
-            for x, row in layer.items():
-                for y, state in row.items():
-                    neighbours = generate_neighbour_locations(
-                        (w, z, x, y), is_four_dimn)
-                    pocket_dimn_after[w][z][x][y] = get_new_state(
-                        state, neighbours, pocket_dimn)
+    for w, z, x, y, state in flatten_dimension(pocket_dimn_after):
+        neighbours = generate_neighbour_locations((w, z, x, y), is_four_dimn)
+        pocket_dimn_after[w][z][x][y] = get_new_state(state, neighbours, pocket_dimn)
 
 
 def generate_neighbour_locations(target, is_four_dimn):
     neighbours = [(target[0], target[1] + z, target[2] + x, target[3] + y)
-                  for z in range(-1, 2) for x in range(-1, 2) for y in range(-1, 2)]
+                  for z, x, y in product(range(-1, 2), repeat=3)]
 
     if is_four_dimn:
-        neighbours += [(nb[0] + w, nb[1], nb[2], nb[3])
-                       for w in {-1, 1} for nb in neighbours]
+        neighbours.extend([(nb[0] + w, nb[1], nb[2], nb[3])
+                           for w in {-1, 1} for nb in neighbours])
 
     neighbours.remove(target)
     return neighbours

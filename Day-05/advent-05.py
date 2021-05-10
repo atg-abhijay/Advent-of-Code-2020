@@ -3,7 +3,10 @@ URL for challenge: https://adventofcode.com/2020/day/5
 """
 
 
-def generate_rows_cols():
+from itertools import product
+
+
+def process_input():
     """
     Upper/lower half can be thought of as
     switching on/off a bit.
@@ -28,7 +31,7 @@ def generate_rows_cols():
 
 
 def part1():
-    seat_rows, seat_cols = generate_rows_cols()
+    seat_rows, seat_cols = process_input()
     highest_seat_id = 0
     for row, col in zip(seat_rows, seat_cols):
         seat_id = row * 8 + col
@@ -39,7 +42,7 @@ def part1():
 
 
 def part2():
-    seat_rows, seat_cols = generate_rows_cols()
+    seat_rows, seat_cols = process_input()
     num_rows, num_cols = 128, 8
     # Generate a grid with all
     # the possible seat IDs.
@@ -54,24 +57,24 @@ def part2():
     # The missing seat will be non-empty. Since
     # its neighbours are also a part of the puzzle
     # input, the neighbours will now be empty.
-    missing_seat, is_seat_found = 0, False
-    for row in range(num_rows):
-        for col in range(num_cols):
-            non_empty_seat = all_seat_ids[row][col] != 0
-            empty_above = row - 1 >= 0 and all_seat_ids[row-1][col] == 0
-            empty_right = col + 1 < num_cols and all_seat_ids[row][col+1] == 0
-            empty_below = row + 1 < num_rows and all_seat_ids[row+1][col] == 0
-            empty_left = col - 1 >= 0 and all_seat_ids[row][col-1] == 0
-
-            if all([non_empty_seat, empty_above, empty_right, empty_below, empty_left]):
-                missing_seat = row * num_cols + col
-                is_seat_found = True
-                break
-
-        if is_seat_found:
+    missing_seat = 0
+    for row, col in product(range(num_rows), range(num_cols)):
+        if is_missing_seat(all_seat_ids, row, col):
+            missing_seat = row * num_cols + col
             break
 
     return missing_seat
+
+
+def is_missing_seat(all_seat_ids, row, col):
+    num_rows, num_cols = 128, 8
+    non_empty_seat = all_seat_ids[row][col] != 0
+    empty_above = row - 1 >= 0 and all_seat_ids[row-1][col] == 0
+    empty_right = col + 1 < num_cols and all_seat_ids[row][col+1] == 0
+    empty_below = row + 1 < num_rows and all_seat_ids[row+1][col] == 0
+    empty_left = col - 1 >= 0 and all_seat_ids[row][col-1] == 0
+
+    return all([non_empty_seat, empty_above, empty_right, empty_below, empty_left])
 
 
 def run():

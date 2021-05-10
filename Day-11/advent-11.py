@@ -3,6 +3,7 @@ URL for challenge: https://adventofcode.com/2020/day/11
 """
 
 
+from itertools import product
 num_rows, num_cols = 0, 0
 
 
@@ -33,6 +34,10 @@ def process_input():
     return grid_before_rules, grid_after_rules
 
 
+def get_ranges():
+    return range(1, num_rows - 1), range(1, num_cols - 1)
+
+
 def part1():
     grid_before_rules, grid_after_rules = process_input()
 
@@ -41,17 +46,16 @@ def part1():
     while True:
         # Since a boundary was added to the original grid,
         # the indices are as such to process only the original grid
-        for row_idx in range(1, num_rows - 1):
-            for col_idx in range(1, num_cols - 1):
-                seat_state = grid_before_rules[row_idx][col_idx]
-                num_neighbours = check_neighbours_pt1(
-                    row_idx, col_idx, grid_before_rules)
+        for row_idx, col_idx in product(*get_ranges()):
+            seat_state = grid_before_rules[row_idx][col_idx]
+            num_neighbours = check_neighbours_pt1(
+                row_idx, col_idx, grid_before_rules)
 
-                if seat_state == 'L' and num_neighbours == 0:
-                    grid_after_rules[row_idx][col_idx] = '#'
+            if seat_state == 'L' and num_neighbours == 0:
+                grid_after_rules[row_idx][col_idx] = '#'
 
-                elif seat_state == '#' and num_neighbours >= 4:
-                    grid_after_rules[row_idx][col_idx] = 'L'
+            elif seat_state == '#' and num_neighbours >= 4:
+                grid_after_rules[row_idx][col_idx] = 'L'
 
         is_grid_unchanged = check_grid_change_and_copy(
             grid_before_rules, grid_after_rules)
@@ -63,10 +67,12 @@ def part1():
 
 
 def check_neighbours_pt1(row_idx, col_idx, grid):
-    neighbour_indices = {"North": (row_idx-1, col_idx), "North-East": (row_idx-1, col_idx+1),
-                         "East": (row_idx, col_idx+1), "South-East": (row_idx+1, col_idx+1),
-                         "South": (row_idx+1, col_idx), "South-West": (row_idx+1, col_idx-1),
-                         "West": (row_idx, col_idx-1), "North-West": (row_idx-1, col_idx-1)}
+    neighbour_indices = {
+        "North": (row_idx-1, col_idx), "North-East": (row_idx-1, col_idx+1),
+        "East": (row_idx, col_idx+1), "South-East": (row_idx+1, col_idx+1),
+        "South": (row_idx+1, col_idx), "South-West": (row_idx+1, col_idx-1),
+        "West": (row_idx, col_idx-1), "North-West": (row_idx-1, col_idx-1)
+    }
     num_neighbours = 0
     for nb_row, nb_col in neighbour_indices.values():
         if grid[nb_row][nb_col] == '#':
@@ -82,22 +88,20 @@ def check_grid_change_and_copy(grid_before_rules, grid_after_rules):
        preparation for the next iteration of rules
     """
     is_grid_unchanged = True
-    for row_idx in range(1, num_rows - 1):
-        for col_idx in range(1, num_cols - 1):
-            val_after = grid_after_rules[row_idx][col_idx]
-            is_val_unchanged = grid_before_rules[row_idx][col_idx] == val_after
-            is_grid_unchanged = is_grid_unchanged and is_val_unchanged
-            grid_before_rules[row_idx][col_idx] = val_after
+    for row_idx, col_idx in product(*get_ranges()):
+        val_after = grid_after_rules[row_idx][col_idx]
+        is_val_unchanged = grid_before_rules[row_idx][col_idx] == val_after
+        is_grid_unchanged = is_grid_unchanged and is_val_unchanged
+        grid_before_rules[row_idx][col_idx] = val_after
 
     return is_grid_unchanged
 
 
 def find_num_occupied(grid):
     num_occupied_seats = 0
-    for row_idx in range(1, num_rows - 1):
-        for col_idx in range(1, num_cols - 1):
-            if grid[row_idx][col_idx] == '#':
-                num_occupied_seats += 1
+    for row_idx, col_idx in product(*get_ranges()):
+        if grid[row_idx][col_idx] == '#':
+            num_occupied_seats += 1
 
     return num_occupied_seats
 
@@ -106,17 +110,16 @@ def part2():
     grid_before_rules, grid_after_rules = process_input()
 
     while True:
-        for row_idx in range(1, num_rows - 1):
-            for col_idx in range(1, num_cols - 1):
-                seat_state = grid_before_rules[row_idx][col_idx]
-                num_neighbours = check_neighbours_pt2(
-                    row_idx, col_idx, grid_before_rules)
+        for row_idx, col_idx in product(*get_ranges()):
+            seat_state = grid_before_rules[row_idx][col_idx]
+            num_neighbours = check_neighbours_pt2(
+                row_idx, col_idx, grid_before_rules)
 
-                if seat_state == 'L' and num_neighbours == 0:
-                    grid_after_rules[row_idx][col_idx] = '#'
+            if seat_state == 'L' and num_neighbours == 0:
+                grid_after_rules[row_idx][col_idx] = '#'
 
-                elif seat_state == '#' and num_neighbours >= 5:
-                    grid_after_rules[row_idx][col_idx] = 'L'
+            elif seat_state == '#' and num_neighbours >= 5:
+                grid_after_rules[row_idx][col_idx] = 'L'
 
         is_grid_unchanged = check_grid_change_and_copy(
             grid_before_rules, grid_after_rules)
@@ -128,10 +131,12 @@ def part2():
 
 
 def check_neighbours_pt2(row_idx, col_idx, grid):
-    neighbour_dirn = {"North": (-1, 0), "North-East": (-1, 1),
-                      "East": (0, 1), "South-East": (1, 1),
-                      "South": (1, 0), "South-West": (1, -1),
-                      "West": (0, -1), "North-West": (-1, -1)}
+    neighbour_dirn = {
+        "North": (-1, 0), "North-East": (-1, 1),
+        "East": (0, 1), "South-East": (1, 1),
+        "South": (1, 0), "South-West": (1, -1),
+        "West": (0, -1), "North-West": (-1, -1)
+    }
 
     num_neighbours = 0
     for nb_row_dirn, nb_col_dirn in neighbour_dirn.values():

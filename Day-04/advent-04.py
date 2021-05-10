@@ -57,57 +57,84 @@ def part2():
         if not part1_verification(papo):
             continue
 
-        # Birth year
-        birth_yr = int(papo["byr"])
-        if birth_yr < 1920 or birth_yr > 2002:
-            continue
+        checks = [
+            check_birth_year, check_issue_year, check_expiration_year,
+            check_height, check_hair_color, check_eye_color, check_passport_id
+        ]
 
-        # Issue year
-        issue_yr = int(papo["iyr"])
-        if issue_yr < 2010 or issue_yr > 2020:
-            continue
-
-        # Expiration year
-        expiration_yr = int(papo["eyr"])
-        if expiration_yr < 2020 or expiration_yr > 2030:
-            continue
-
-        # Height
-        height = papo["hgt"]
-        height_value = int(height[:-2])
-        if height[-2:] not in ["cm", "in"]:
-            continue
-
-        if height[-2:] == "cm" and (height_value < 150 or height_value > 193):
-            continue
-
-        elif height[-2:] == "in" and (height_value < 59 or height_value > 76):
-            continue
-
-        # Hair color
-        hair_color = papo["hcl"]
-        if len(hair_color) != 7 or hair_color[0] != "#":
-            continue
-
-        allowed_chars = set(string.digits + 'abcdef')
-        if not set(hair_color[1:]).issubset(allowed_chars):
-            continue
-
-        # Eye color
-        eye_color = papo["ecl"]
-        valid_eye_colors = set(
-            ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])
-        if eye_color not in valid_eye_colors:
-            continue
-
-        # Passport ID
-        passport_id = papo["pid"]
-        if len(passport_id) != 9 or not set(passport_id).issubset(string.digits):
-            continue
-
-        num_valid_papos += 1
+        if all((check(papo) for check in checks)):
+            num_valid_papos += 1
 
     return num_valid_papos
+
+
+def check_birth_year(passport):
+    birth_yr = int(passport["byr"])
+    if birth_yr < 1920 or birth_yr > 2002:
+        return False
+
+    return True
+
+
+def check_issue_year(passport):
+    issue_yr = int(passport["iyr"])
+    if issue_yr < 2010 or issue_yr > 2020:
+        return False
+
+    return True
+
+
+def check_expiration_year(passport):
+    expiration_yr = int(passport["eyr"])
+    if expiration_yr < 2020 or expiration_yr > 2030:
+        return False
+
+    return True
+
+
+def check_height(passport):
+    height = passport["hgt"]
+    height_value = int(height[:-2])
+    if height[-2:] not in ["cm", "in"]:
+        return False
+
+    if height[-2:] == "cm" and (height_value < 150 or height_value > 193):
+        return False
+
+    if height[-2:] == "in" and (height_value < 59 or height_value > 76):
+        return False
+
+    return True
+
+
+def check_hair_color(passport):
+    hair_color = passport["hcl"]
+    if len(hair_color) != 7 or hair_color[0] != "#":
+        return False
+
+    allowed_chars = set(string.digits + 'abcdef')
+    if not set(hair_color[1:]).issubset(allowed_chars):
+        return False
+
+    return True
+
+
+def check_eye_color(passport):
+    eye_color = passport["ecl"]
+    valid_eye_colors = set(
+        ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])
+    if eye_color not in valid_eye_colors:
+        return False
+
+    return True
+
+
+def check_passport_id(passport):
+    passport_id = passport["pid"]
+    if len(passport_id) != 9 or not set(passport_id).issubset(string.digits):
+        return False
+
+    return True
 
 
 def run():
