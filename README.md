@@ -23,7 +23,7 @@ Information about `radon`'s usage of it can be found [here](https://radon.readth
 | Solution | Complexity | Solution | Complexity | Solution | Complexity
 | -------- | ---------- | -------- | ---------- | -------- | ----------
 | [Day 01](./Day-01/advent-01.py) | `A (3.25)` | [Day 10](./Day-10/advent-10.py) | `A (3.14)` | [Day 19](./Day-19/advent-19.py) | `B (5.13)`
-| [Day 02](./Day-02/advent-02.py) | `A (3.67)` | [Day 11](./Day-11/advent-11.py) | `A (4.89)` | [Day 20](./Day-20/advent-20.py) | `B (6.86)`
+| [Day 02](./Day-02/advent-02.py) | `A (3.67)` | [Day 11](./Day-11/advent-11.py) | `A (4.89)` | [Day 20](./Day-20/advent-20.py) | `B (6.20)`
 | [Day 03](./Day-03/advent-03.py) | `A (2.25)` | [Day 12](./Day-12/advent-12.py) | `A (3.14)` | [Day 21](./Day-21/advent-21.py) | `A (3.00)`
 | [Day 04](./Day-04/advent-04.py) | `A (4.00)` | [Day 13](./Day-13/advent-13.py) | `A (4.00)` | [Day 22](./Day-22/advent-22.py) | `A (4.00)`
 | [Day 05](./Day-05/advent-05.py) | `A (4.60)` | [Day 14](./Day-14/advent-14.py) | `A (4.00)` | [Day 23](./Day-23/advent-23.py) | `A (2.75)`
