@@ -5,6 +5,9 @@ Check PR description for brief notes and comments.
 """
 
 
+from itertools import product
+
+
 class Rule():
     def __init__(self, value, sub_rules):
         self.value = value
@@ -20,11 +23,9 @@ def process_input():
         if line == '\n':
             break
 
-        line = line.strip().split(': ')
-        rule_num = line[0]
+        rule_num, sub_rule_sequences = line.strip().split(': ')
         sub_rules = []
-        sub_rule_sequences = line[1].split(' | ')
-        for sub_rule in sub_rule_sequences:
+        for sub_rule in sub_rule_sequences.split(' | '):
             sub_rules.append([x.replace('"', '') for x in sub_rule.split()])
 
         rules[rule_num] = Rule(rule_num, sub_rules)
@@ -39,7 +40,7 @@ def part1():
 
     num_valid = 0
     for message in messages:
-        is_valid, latest_idx = is_message_valid(message, '0', rules)
+        is_valid, latest_idx = does_match_rule(message, '0', rules)
         # If a portion of the message is left over
         # after iterating through the rules, then
         # those are extra characters and the
@@ -67,13 +68,9 @@ def build_strings(rule_val, rules):
         for next_rule in sub_rule:
             child_strings = build_strings(next_rule, rules)
             if not sub_rule_strings:
-                sub_rule_strings = child_strings.copy()
+                sub_rule_strings = child_strings
             else:
-                current_strings = sub_rule_strings.copy()
-                sub_rule_strings.clear()
-                for s in current_strings:
-                    for t in child_strings:
-                        sub_rule_strings.append(s + t)
+                sub_rule_strings = [s + t for s, t in product(sub_rule_strings, child_strings)]
 
         rule.strings += sub_rule_strings
 
@@ -91,16 +88,18 @@ def part2():
     """
     rules, messages = process_input()
 
-    num_valid = 0
     strings_42 = set(build_strings('42', rules))
     strings_31 = set(build_strings('31', rules))
     elem = strings_42.pop()
-    str_len = len(elem)
+    num_valid, str_len = 0, len(elem)
     strings_42.add(elem)
 
     for message in messages:
         appearances_42, appearances_31 = 0, 0
         is_valid = True
+
+        # Calculate number of
+        # strings that obey rule 42
         while message:
             sub_message = message[:str_len]
             if sub_message in strings_42:
@@ -113,7 +112,9 @@ def part2():
 
             message = message[str_len:]
 
-        while message:
+        # Calculate number of
+        # strings that obey rule 31
+        while is_valid and message:
             sub_message = message[:str_len]
             if sub_message in strings_31:
                 appearances_31 += 1
@@ -124,11 +125,7 @@ def part2():
 
             message = message[str_len:]
 
-        if not is_valid:
-            continue
-        elif appearances_31 >= appearances_42:
-            continue
-        elif appearances_31 == 0:
+        if any([not is_valid, appearances_31 >= appearances_42, appearances_31 == 0]):
             continue
 
         num_valid += 1
@@ -136,7 +133,7 @@ def part2():
     return num_valid
 
 
-def is_message_valid(message, target_val, rules):
+def does_match_rule(message, target_rule, rules):
     # If there are rules to follow but
     # the message is empty, the message
     # is shorter than required.
@@ -145,19 +142,19 @@ def is_message_valid(message, target_val, rules):
 
     # The alphabets will not
     # be in the dictionary.
-    if target_val not in rules:
-        return message[0] == target_val, 1
+    if target_rule not in rules:
+        return message[0] == target_rule, 1
 
     # The message has to completely pass
     # a sub-rule. The message has to pass
     # at least one of the sub-rules.
-    rule = rules[target_val]
+    rule = rules[target_rule]
     msg_passes_any_rule = False
     for sub_rule in rule.sub_rules:
         latest_idx = 0
         msg_passes_subrule = True
         for child_rule in sub_rule:
-            sub_result = is_message_valid(
+            sub_result = does_match_rule(
                 message[latest_idx:], child_rule, rules)
             msg_passes_subrule &= sub_result[0]
             latest_idx += sub_result[1]
