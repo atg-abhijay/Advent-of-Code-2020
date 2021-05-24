@@ -259,34 +259,8 @@ def orient_corner_tile(tile_conns, image_layout):
 
 
 def create_full_image(tile_conns, tiles, image_layout):
-    opposite_sides = nx.Graph([
-        ("top", "bottom"), ("top_rev", "bottom_rev"),
-        ("right", "left"), ("right_rev", "left_rev")
-    ])
-    full_image, next_ortn = [], None
-
     orient_corner_tile(tile_conns, image_layout)
-
-    # Append first row
-    image_row = []
-    first_itr, second_itr = it.tee(image_layout[0])
-    next(second_itr)
-    for u_tile, v_tile in zip(first_itr, second_itr):
-        edge_ends = list(tile_conns[u_tile][v_tile].values())
-        if str(u_tile) in edge_ends[0]:
-            u_side, v_side = [ee.split('_', 1)[1] for ee in edge_ends]
-        else:
-            v_side, u_side = [ee.split('_', 1)[1] for ee in edge_ends]
-
-        target_side = next_ortn if next_ortn else u_side
-        image_row.append(rotate_tile(tiles[u_tile]["image"], target_side))
-        if target_side != u_side:
-            v_side = flip_tile_side(v_side)
-
-        next_ortn = next(opposite_sides.neighbors(v_side))
-
-    image_row.append(rotate_tile(tiles[v_tile]["image"], next_ortn))
-    full_image.append(image_row)
+    full_image = [create_first_row(tile_conns, tiles, image_layout)]
 
     # Add the rest of the rows of the image
     row_idx = 1
@@ -315,6 +289,33 @@ def create_full_image(tile_conns, tiles, image_layout):
             final_image.append(list(it.chain(*elements)))
 
     return final_image
+
+
+def create_first_row(tile_conns, tiles, image_layout):
+    opposite_sides = nx.Graph([
+        ("top", "bottom"), ("top_rev", "bottom_rev"),
+        ("right", "left"), ("right_rev", "left_rev")
+    ])
+    image_row, next_ortn = [], None
+    first_itr, second_itr = it.tee(image_layout[0])
+    next(second_itr)
+
+    for u_tile, v_tile in zip(first_itr, second_itr):
+        edge_ends = list(tile_conns[u_tile][v_tile].values())
+        if str(u_tile) in edge_ends[0]:
+            u_side, v_side = [ee.split('_', 1)[1] for ee in edge_ends]
+        else:
+            v_side, u_side = [ee.split('_', 1)[1] for ee in edge_ends]
+
+        target_side = next_ortn if next_ortn else u_side
+        image_row.append(rotate_tile(tiles[u_tile]["image"], target_side))
+        if target_side != u_side:
+            v_side = flip_tile_side(v_side)
+
+        next_ortn = next(opposite_sides.neighbors(v_side))
+
+    image_row.append(rotate_tile(tiles[v_tile]["image"], next_ortn))
+    return image_row
 
 
 def flip_tile_side(tile_side):
